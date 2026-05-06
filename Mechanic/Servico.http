@@ -1,0 +1,58 @@
+@Mechanic_HostAddress = http://localhost:5195
+
+###
+
+# Copie o token retornado e cole abaixo
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc3Nzk0NjM1NywiaXNzIjoiTWVjaGFuaWNBUEkiLCJhdWQiOiJNZWNoYW5pY0FQSSJ9.og-TTkJO7puhO-7DN_Ep64iGo52vQ6zYYxjXP3haZ5U
+
+###
+
+### Get all servicos
+GET {{Mechanic_HostAddress}}/api/servicos
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### Get servico by ID
+GET {{Mechanic_HostAddress}}/api/servicos/1
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### Get servicos por SKU (filtro)
+GET {{Mechanic_HostAddress}}/api/servicos?sku=ABC
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### Create servico
+POST {{Mechanic_HostAddress}}/api/servicos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "sku": "SERV001",
+    "descricao": "Troca de óleo",
+    "preco": 150.00
+}
+
+###
+
+### Update servico
+PUT {{Mechanic_HostAddress}}/api/servicos/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "descricao": "Troca de óleo completa",
+    "preco": 180.00
+}
+
+###
+
+### Soft delete (inativar)
+DELETE {{Mechanic_HostAddress}}/api/servicos/1
+Authorization: Bearer {{token}}

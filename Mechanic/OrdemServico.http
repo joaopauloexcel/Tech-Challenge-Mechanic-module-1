@@ -1,0 +1,223 @@
+@Mechanic_HostAddress = http://localhost:5195
+
+###
+
+# Copie o token retornado e cole abaixo
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc3ODAyOTc3MywiaXNzIjoiTWVjaGFuaWNBUEkiLCJhdWQiOiJNZWNoYW5pY0FQSSJ9.8yp5SPiHpzGV19Tx6gyV0YoOUo7cAaytc7C71Mb_o7Q
+
+
+###
+
+# =========================
+
+# Criar OS
+
+# =========================
+
+POST {{Mechanic_HostAddress}}/api/ordens-servico
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+"titulo": "Troca de óleo",
+"descricao": "Cliente relatou barulho no motor",
+"clienteId": 1,
+"veiculoId": 1
+}
+
+###
+
+# =========================
+
+# Listar OS (filtros opcionais)
+
+# =========================
+
+GET {{Mechanic_HostAddress}}/api/ordens-servico?status=2
+Authorization: Bearer {{token}}
+
+###
+
+# =========================
+
+# Obter OS por ID
+
+# =========================
+
+GET {{Mechanic_HostAddress}}/api/ordens-servico/1
+Authorization: Bearer {{token}}
+
+###
+
+# =========================
+
+# Obter OS por HASH (público)
+
+# =========================
+
+GET {{Mechanic_HostAddress}}/api/ordens-servico/externo/da3e3383029e48d49ffb73f1a23b991f
+Authorization: Bearer {{token}}
+
+###
+
+# =========================
+
+# Iniciar diagnóstico
+
+# =========================
+
+POST {{Mechanic_HostAddress}}/api/ordens-servico/1/iniciar-diagnostico
+Authorization: Bearer {{token}}
+
+###
+
+# =========================
+
+# Enviar orçamento
+
+# =========================
+
+POST {{Mechanic_HostAddress}}/api/ordens-servico/1/enviar-orcamento
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+"descricao": "Orçamento inicial",
+"produtosOS": [
+{
+"produtoId": 1,
+"qtdProduto": 2,
+"precoUnitarioProduto": 50
+}
+],
+"servicosOS": [
+{
+"servicoId": 1,
+"precoServico": 100
+}
+]
+}
+
+###
+
+# =========================
+
+# Aprovar orçamento
+
+# =========================
+
+PATCH {{Mechanic_HostAddress}}/api/ordens-servico/1/orcamentos/1/decisao
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+"aprovar": true
+}
+
+###
+
+# =========================
+
+# Reprovar orçamento
+
+# =========================
+
+PATCH {{Mechanic_HostAddress}}/api/ordens-servico/1/orcamentos/1/decisao
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+"aprovar": false
+}
+
+###
+
+# =========================
+
+# Executar serviço - INICIAR
+
+# =========================
+
+POST {{Mechanic_HostAddress}}/api/ordens-servico/1/orcamentos/1/servicos/1/executar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+"acao": 1
+}
+
+###
+
+# =========================
+
+# Executar serviço - PAUSAR
+
+# =========================
+
+POST {{Mechanic_HostAddress}}/api/ordens-servico/1/orcamentos/1/servicos/1/executar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+"acao": 2
+}
+
+###
+
+# =========================
+
+# Executar serviço - FINALIZAR
+
+# =========================
+
+POST {{Mechanic_HostAddress}}/api/ordens-servico/1/orcamentos/1/servicos/1/executar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+"acao": 3
+}
+
+###
+
+# =========================
+
+# Cancelar OS
+
+# =========================
+
+POST {{Mechanic_HostAddress}}/api/ordens-servico/1/status/cancelar
+Authorization: Bearer {{token}}
+
+###
+
+# =========================
+
+# Finalizar OS
+
+# =========================
+
+POST {{Mechanic_HostAddress}}/api/ordens-servico/1/status/finalizar
+Authorization: Bearer {{token}}
+
+###
+
+# =========================
+
+# Entregar OS
+
+# =========================
+
+POST {{Mechanic_HostAddress}}/api/ordens-servico/1/status/entregar
+Authorization: Bearer {{token}}
+
+###
+
+# =========================
+
+# Relatório tempo médio
+
+# =========================
+
+GET {{Mechanic_HostAddress}}/api/ordens-servico/relatorios/servicos/tempo-medio
+Authorization: Bearer {{token}}

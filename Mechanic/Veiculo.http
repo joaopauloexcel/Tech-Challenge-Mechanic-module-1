@@ -1,0 +1,60 @@
+@Mechanic_HostAddress = http://localhost:5195
+
+###
+
+# Copie o token retornado e cole abaixo
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc3Nzk0NjM1NywiaXNzIjoiTWVjaGFuaWNBUEkiLCJhdWQiOiJNZWNoYW5pY0FQSSJ9.og-TTkJO7puhO-7DN_Ep64iGo52vQ6zYYxjXP3haZ5U
+
+###
+
+### Get all veiculos
+GET {{Mechanic_HostAddress}}/api/veiculos
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### Get veiculo by ID
+GET {{Mechanic_HostAddress}}/api/veiculos/1
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### Get veiculos por placa (filtro)
+GET {{Mechanic_HostAddress}}/api/veiculos?placa=ABC
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### Create veiculo
+POST {{Mechanic_HostAddress}}/api/veiculos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "clienteId": 1,
+    "placa": "ABC1234",
+    "marca": "Toyota",
+    "modelo": "Corolla",
+    "ano": 2020
+}
+
+###
+
+### Update veiculo
+PUT {{Mechanic_HostAddress}}/api/veiculos/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "marca": "Honda",
+    "modelo": "Civic"
+}
+
+###
+
+### Soft delete (inativar)
+DELETE {{Mechanic_HostAddress}}/api/veiculos/1
+Authorization: Bearer {{token}}

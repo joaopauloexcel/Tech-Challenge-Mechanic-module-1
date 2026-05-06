@@ -1,0 +1,76 @@
+@Mechanic_HostAddress = http://localhost:5195
+
+###
+
+# Copie o token retornado e cole abaixo
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc3Nzk0NjM1NywiaXNzIjoiTWVjaGFuaWNBUEkiLCJhdWQiOiJNZWNoYW5pY0FQSSJ9.og-TTkJO7puhO-7DN_Ep64iGo52vQ6zYYxjXP3haZ5U
+
+###
+
+### Get all produtos
+GET {{Mechanic_HostAddress}}/api/produtos
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### Get produto by ID
+GET {{Mechanic_HostAddress}}/api/produtos/1
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### Get produtos por SKU (filtro)
+GET {{Mechanic_HostAddress}}/api/produtos?sku=PROD
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### Create produto
+POST {{Mechanic_HostAddress}}/api/produtos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sku": "PROD001",
+  "descricao": "Filtro de óleo",
+  "precoCusto": 20.00,
+  "precoVenda": 45.00,
+  "quantidadeTotal": 100,
+  "quantidadeReservada": 0,
+  "quantidadeMinima": 10
+}
+
+###
+
+### Update produto
+PUT {{Mechanic_HostAddress}}/api/produtos/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sku": "PROD001",
+  "descricao": "Filtro de óleo premium",
+  "precoCusto": 25.00,
+  "precoVenda": 50.00,
+  "quantidadeMinima": 15
+}
+
+### Update estoque produto
+PATCH {{Mechanic_HostAddress}}/api/produtos/1/estoque
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantidadeAdicionada": 50,
+  "novoPrecoCusto": 22.00,
+  "novoPrecoVenda": 48.00
+}
+
+###
+
+### Soft delete (inativar)
+DELETE {{Mechanic_HostAddress}}/api/produtos/1
+Authorization: Bearer {{token}}
