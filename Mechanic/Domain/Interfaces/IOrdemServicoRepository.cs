@@ -1,5 +1,4 @@
-﻿using Mechanic.Application.DTOs.OrdemServico.Query;
-using Mechanic.Application.DTOs.OrdemServico.Request;
+﻿using Mechanic.Application.DTOs.OrdemServico.Params;
 using Mechanic.Domain.Entities;
 
 namespace Mechanic.Domain.Interfaces
@@ -8,7 +7,7 @@ namespace Mechanic.Domain.Interfaces
     {
         Task AdicionarAsync(OrdemServico os);
 
-        Task<List<OrdemServico>> ListarAsync(ListarOrdemServicoFiltroDto filtro);
+        Task<List<OrdemServico>> ListarAsync(ListarOrdemServicoParamsDto dto);
 
         Task<OrdemServico?> ObterPorIdAsync(int id);
 

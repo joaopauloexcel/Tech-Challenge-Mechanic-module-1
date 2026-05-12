@@ -1,6 +1,7 @@
-﻿using Mechanic.Domain.Entities;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Mechanic.Domain.Entities;
 
 [Table("OrdemServicoServicos")]
 public class OrdemServicoServico

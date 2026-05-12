@@ -1,4 +1,4 @@
-﻿using Mechanic.Application.DTOs.Produto;
+﻿using Mechanic.Application.DTOs.Produto.Request;
 using Mechanic.Application.Services;
 using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
@@ -61,7 +61,7 @@ public class ProdutoServiceTests
     [Fact]
     public async Task Criar_DeveLancarExcecao_QuandoSkuExistir()
     {
-        var dto = new AdicionarProdutoDto { Sku = "ABC" };
+        var dto = new AdicionarProdutoRequestDto { Sku = "ABC" };
 
         _repoMock.Setup(r => r.ExisteSkuAsync("ABC"))
                  .ReturnsAsync(true);
@@ -72,14 +72,13 @@ public class ProdutoServiceTests
     [Fact]
     public async Task Criar_DeveAdicionarProduto()
     {
-        var dto = new AdicionarProdutoDto
+        var dto = new AdicionarProdutoRequestDto
         {
             Sku = "ABC",
             Descricao = "Produto",
             PrecoCusto = 10,
             PrecoVenda = 20,
             QuantidadeTotal = 5,
-            QuantidadeReservada = 1,
             QuantidadeMinima = 2
         };
 
@@ -102,7 +101,7 @@ public class ProdutoServiceTests
         _repoMock.Setup(r => r.ListarPorIdAsync(1))
           .ReturnsAsync((Produto?)null);
 
-        var result = await _service.Atualizar(1, new AtualizarProdutoDto());
+        var result = await _service.Atualizar(1, new AtualizarProdutoRequestDto());
 
         Assert.False(result);
     }
@@ -112,7 +111,7 @@ public class ProdutoServiceTests
     {
         var produto = new Produto { Id = 1, Sku = "OLD" };
 
-        var dto = new AtualizarProdutoDto
+        var dto = new AtualizarProdutoRequestDto
         {
             Sku = "NEW",
             Descricao = "Novo",
@@ -140,7 +139,7 @@ public class ProdutoServiceTests
     {
         var produto = new Produto { Id = 1, Sku = "OLD" };
 
-        var dto = new AtualizarProdutoDto { Sku = "NEW" };
+        var dto = new AtualizarProdutoRequestDto { Sku = "NEW" };
 
         _repoMock.Setup(r => r.ListarPorIdAsync(1))
                  .ReturnsAsync(produto);
@@ -162,9 +161,9 @@ public class ProdutoServiceTests
             PrecoVenda = 10
         };
 
-        var dto = new AtualizarEstoqueProdutoDto
+        var dto = new AtualizarEstoqueProdutoRequestDto
         {
-            quantidadeAdicionada = 5,
+            QuantidadeAdicionada = 5,
             NovoPrecoCusto = 6,
             NovoPrecoVenda = 12
         };

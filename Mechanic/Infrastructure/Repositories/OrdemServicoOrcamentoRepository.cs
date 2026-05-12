@@ -17,7 +17,6 @@ namespace Mechanic.Infrastructure.Repositories
         public async Task AdicionarAsync(OrdemServicoOrcamento entity)
         {
             await _context.OrdemServicoOrcamentos.AddAsync(entity);
-            // Note que não chamamos SaveChanges aqui, pois o UnitOfWork cuidará disso
         }
 
         public async Task<OrdemServicoOrcamento?> ObterPorIdAsync(int id)

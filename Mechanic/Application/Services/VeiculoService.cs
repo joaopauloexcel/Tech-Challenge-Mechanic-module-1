@@ -1,7 +1,9 @@
-﻿using Mechanic.Application.DTOs.Veiculo;
+﻿using Mechanic.Application.DTOs.Veiculo.Params;
+using Mechanic.Application.DTOs.Veiculo.Request;
+using Mechanic.Application.DTOs.Veiculo.Response;
 using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using Mechanic.Domain.Validacoes;
 
 namespace Mechanic.Application.Services
 {
@@ -14,11 +16,11 @@ namespace Mechanic.Application.Services
             _repository = repository;
         }
 
-        public async Task<List<VeiculoDto>> ListarTodos(string? placa)
+        public async Task<List<VeiculoResponseDto>> ListarTodos(VeiculoParamsDto? dto)
         {
-            var veiculos = await _repository.ListarTodosAsync(placa);
+            var veiculos = await _repository.ListarTodosAsync(dto?.Placa);
 
-            return veiculos.Select(v => new VeiculoDto
+            return veiculos.Select(v => new VeiculoResponseDto
             {
                 Id = v.Id,
                 ClienteId = v.ClienteId,
@@ -30,12 +32,12 @@ namespace Mechanic.Application.Services
             }).ToList();
         }
 
-        public async Task<VeiculoDto?> ListarPorId(int id)
+        public async Task<VeiculoResponseDto?> ListarPorId(int id)
         {
             var v = await _repository.ListarPorIdAsync(id);
             if (v is null) return null;
 
-            return new VeiculoDto
+            return new VeiculoResponseDto
             {
                 Id = v.Id,
                 ClienteId = v.ClienteId,
@@ -47,8 +49,11 @@ namespace Mechanic.Application.Services
             };
         }
 
-        public async Task<int> Criar(AdicionarVeiculoDto dto)
+        public async Task<int> Criar(AdicionarVeiculoRequestDto dto)
         {
+            if (!Placas.EhValida(dto.Placa))
+                throw new Exception("Placa inválida");
+
             var existePlaca = await _repository.ExistePlacaAsync(dto.Placa);
 
             if (existePlaca)
@@ -73,7 +78,7 @@ namespace Mechanic.Application.Services
             return veiculo.Id;
         }
 
-        public async Task<bool> Atualizar(int id, AtualizarVeiculoDto dto)
+        public async Task<bool> Atualizar(int id, AtualizarVeiculoRequestDto dto)
         {
             var veiculo = await _repository.ListarPorIdAsync(id);
             if (veiculo is null) return false;
@@ -83,6 +88,9 @@ namespace Mechanic.Application.Services
 
             if (!string.IsNullOrWhiteSpace(dto.Placa))
             {
+                if (!Placas.EhValida(dto.Placa))
+                    throw new Exception("Placa inválida");
+
                 var existe = await _repository.ExistePlacaAsync(dto.Placa);
 
                 if (existe && dto.Placa != veiculo.Placa)

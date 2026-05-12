@@ -1,7 +1,7 @@
 ﻿using Mechanic.Data;
-using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Mechanic.Domain.Entities;
 
 namespace Mechanic.Infrastructure.Repositories
 {

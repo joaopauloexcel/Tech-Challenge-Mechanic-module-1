@@ -1,10 +1,10 @@
-﻿using Mechanic.Application.DTOs.OrdemServico.Query;
+﻿using Mechanic.Application.DTOs.OrdemServico.Params;
+using Mechanic.Application.DTOs.OrdemServico.Response;
 using Mechanic.Application.Enums;
 using Mechanic.Data;
 using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Mechanic.Infrastructure.Repositories
 {
@@ -22,24 +22,32 @@ namespace Mechanic.Infrastructure.Repositories
             await _context.OrdensServico.AddAsync(os);
         }
 
-        public async Task<List<OrdemServico>> ListarAsync(ListarOrdemServicoFiltroDto filtro)
+        public async Task<List<OrdemServico>> ListarAsync(ListarOrdemServicoParamsDto dto)
         {
             var query = _context.OrdensServico
                 .Include(x => x.Cliente)
                 .Include(x => x.Veiculo)
+                .Include(x => x.Orcamentos)
+                    .ThenInclude(o => o.Produtos)
+                        .ThenInclude(s => s.Produto)
+                .Include(x => x.Orcamentos)
+                    .ThenInclude(o => o.Servicos)
+                        .ThenInclude(s => s.Servico)
+                .Include(x => x.Servicos)
+                    .ThenInclude(s => s.Logs)
                 .AsQueryable();
 
-            if (filtro.Id.HasValue)
-                query = query.Where(x => x.Id == filtro.Id.Value);
+            if (dto.OsId.HasValue)
+                query = query.Where(x => x.Id == dto.OsId.Value);
 
-            if (filtro.Status.HasValue)
-                query = query.Where(x => x.Status == filtro.Status.Value);
+            if (dto.Status.HasValue)
+                query = query.Where(x => x.Status == dto.Status.Value);
 
-            if (!string.IsNullOrWhiteSpace(filtro.CpfCnpj))
-                query = query.Where(x => x.Cliente.CpfCnpj.Value == filtro.CpfCnpj);
+            if (!string.IsNullOrWhiteSpace(dto.CpfCnpj))
+                query = query.Where(x => x.Cliente.CpfCnpj.Value == dto.CpfCnpj);
 
-            if (!string.IsNullOrWhiteSpace(filtro.Placa))
-                query = query.Where(x => x.Veiculo.Placa == filtro.Placa);
+            if (!string.IsNullOrWhiteSpace(dto.Placa))
+                query = query.Where(x => x.Veiculo.Placa == dto.Placa);
 
             return await query.ToListAsync();
         }
@@ -51,16 +59,28 @@ namespace Mechanic.Infrastructure.Repositories
                 .Include(x => x.Veiculo)
                 .Include(x => x.Orcamentos)
                     .ThenInclude(o => o.Produtos)
+                        .ThenInclude(s => s.Produto)
                 .Include(x => x.Orcamentos)
                     .ThenInclude(o => o.Servicos)
+                        .ThenInclude(s => s.Servico)
                 .Include(x => x.Servicos)
                     .ThenInclude(s => s.Logs)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
-
         public async Task<OrdemServico?> ObterPorComHashAsync(string hashExterno)
         {
             return await _context.OrdensServico
+                .Include(x => x.Cliente)
+                .Include(x => x.Veiculo)
+
+                .Include(x => x.Orcamentos)
+                    .ThenInclude(o => o.Produtos)
+                        .ThenInclude(s => s.Produto)
+                .Include(x => x.Orcamentos)
+                    .ThenInclude(o => o.Servicos)
+                        .ThenInclude(s => s.Servico)
+                .Include(x => x.Servicos)
+                    .ThenInclude(s => s.Logs)
                 .FirstOrDefaultAsync(x => x.PublicHash == hashExterno);
         }
 

@@ -7,6 +7,7 @@ using Mechanic.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,12 +36,20 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddValidation();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("AppDbContext")
-        ?? throw new InvalidOperationException("Connection string 'AppDbContext' not found.")
-    )
-);
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite("Data Source=:memory:"));
+}
+else
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlServer(
+            builder.Configuration.GetConnectionString("AppDbContext")
+            ?? throw new InvalidOperationException("Connection string 'AppDbContext' not found.")
+        ).LogTo(Console.WriteLine, LogLevel.Information)
+    );
+}
 
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<ClienteService>();
@@ -64,22 +73,32 @@ builder.Services.AddScoped<OrdemServicoService>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-builder.Services.AddOpenApi();
+
 builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-
-    if (File.Exists(xmlPath))
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        options.IncludeXmlComments(xmlPath);
-    }
+        Name = "Authorization",
+        Description = "Digite: Bearer {seu token}",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecuritySchemeReference("Bearer"),
+            new List<string>()
+        }
+    });
 });
+
 
 var app = builder.Build();
 
@@ -87,7 +106,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.MapOpenApi();
 }
 
 app.UseAuthentication();
@@ -101,6 +119,7 @@ app.MapVeiculoEndpoints();
 app.MapServicoEndpoints(); 
 app.MapProdutoEndpoints();
 app.MapOrdemServicoEndpoints();
+app.MapOrdemServicoExternoEndpoints();
 
 using (var scope = app.Services.CreateScope())
 {

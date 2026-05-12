@@ -1,5 +1,8 @@
-﻿using Mechanic.Application.DTOs.Cliente;
+﻿using Mechanic.Application.DTOs.Cliente.Params;
+using Mechanic.Application.DTOs.Cliente.Request;
+using Mechanic.Application.DTOs.Cliente.Response;
 using Mechanic.Application.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Mechanic.Presentation.Endpoints;
 
@@ -12,14 +15,15 @@ public static class ClienteEndpoints
             .RequireAuthorization()
             .WithTags("Clientes");
 
-        group.MapGet("/", async (string? cpfCnpj, ClienteService service) =>
+        group.MapGet("/", async ([AsParameters] ClienteParamsDto dto, [FromKeyedServices] ClienteService service) =>
         {
-            return Results.Ok(await service.ListarTodos(cpfCnpj));
+            var clientes = await service.ListarTodos(dto);
+            return Results.Ok(clientes);
         })
         .WithName("ListarClientes")
         .WithSummary("Lista todos os clientes")
         .WithDescription("Retorna uma lista de clientes. Pode filtrar por CPF/CNPJ.")
-        .Produces<List<ClienteDto>>(StatusCodes.Status200OK);
+        .Produces<List<ClienteResponseDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/{id}", async (int id, ClienteService service) =>
         {
@@ -28,10 +32,9 @@ public static class ClienteEndpoints
         })
         .WithName("ObterClientePorId")
         .WithSummary("Busca cliente por ID")
-        .Produces<ClienteDto>(StatusCodes.Status200OK)
+        .Produces<ClienteResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
-
-        group.MapPost("/", async (AdicionarClienteDto dto, ClienteService service) =>
+        group.MapPost("/", async ([FromBody] AdicionarClienteRequestDto dto, [FromKeyedServices] ClienteService service) =>
         {
             try
             {
@@ -52,27 +55,26 @@ public static class ClienteEndpoints
         .Produces<int>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict);
-
-        group.MapPut("/{id}", async (int id, AtualizarServicoDto dto, ClienteService service) =>
+        group.MapPut("/{id}", async (int id, [FromBody] AtualizarClienteRequestDto dto, [FromKeyedServices] ClienteService service) =>
         {
             var updated = await service.Atualizar(id, dto);
-            return updated ? Results.Ok() : Results.NotFound();
+            return updated ? Results.NoContent() : Results.NotFound();
         })
         .WithName("AtualizarCliente")
         .WithSummary("Atualiza um cliente")
         .WithDescription("Atualiza os dados de um cliente existente.")
-        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id}", async (int id, ClienteService service) =>
         {
             var deleted = await service.Deletar(id);
-            return deleted ? Results.Ok() : Results.NotFound();
+            return deleted ? Results.NoContent() : Results.NotFound();
         })
         .WithName("DesativarCliente")
         .WithSummary("Desativa um cliente")
         .WithDescription("Desativa um cliente (soft delete).")
-        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
     }
 }

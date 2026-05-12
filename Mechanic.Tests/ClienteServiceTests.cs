@@ -1,14 +1,8 @@
 ﻿using Mechanic.Application.Services;
 using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
-using Mechanic.Application.DTOs;
-using Mechanic.Domain.ValueObjects;
 using Moq;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
+using Mechanic.Application.DTOs.Cliente.Params;
 
 public class ClienteServiceTests
 {
@@ -21,15 +15,15 @@ public class ClienteServiceTests
         _service = new ClienteService(_repoMock.Object);
     }
 
-
     [Fact]
     public async Task ListarTodos_DeveChamarRepositorio()
     {
         _repoMock
             .Setup(r => r.ListarTodosAsync("123"))
             .ReturnsAsync(new List<Cliente>());
+        var dto = new ClienteParamsDto { CpfCnpj = "123" };
 
-        await _service.ListarTodos("123");
+        await _service.ListarTodos(dto);
 
         _repoMock.Verify(r => r.ListarTodosAsync("123"), Times.Once);
     }
@@ -92,24 +86,24 @@ public class ClienteServiceTests
     }
 
     [Fact]
-public void Cliente_DeveEstarValido_AposConfiguracao()
-{
-    var cliente = new Cliente
+    public void Cliente_DeveEstarValido_AposConfiguracao()
     {
-        Id = 1,
-        Nome = "João",
-        Telefone1 = "1111",
-        Telefone2 = "2222",
-        Email = "teste@email.com",
-        Ativo = true
-    };
+        var cliente = new Cliente
+        {
+            Id = 1,
+            Nome = "João",
+            Telefone1 = "1111",
+            Telefone2 = "2222",
+            Email = "teste@email.com",
+            Ativo = true
+        };
 
-    cliente.SetDocument("11144477735");
+        cliente.SetDocument("11144477735");
 
-    Assert.Equal(1, cliente.Id);
-    Assert.Equal("João", cliente.Nome);
-    Assert.Equal("11144477735", cliente.CpfCnpj.Value);
-}
+        Assert.Equal(1, cliente.Id);
+        Assert.Equal("João", cliente.Nome);
+        Assert.Equal("11144477735", cliente.CpfCnpj.Value);
+    }
 
 
 }

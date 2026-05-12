@@ -1,8 +1,10 @@
-﻿using Mechanic.Domain.Entities;
+﻿using System.Diagnostics.CodeAnalysis;
+using Mechanic.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mechanic.Data
 {
+    [ExcludeFromCodeCoverage]
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }

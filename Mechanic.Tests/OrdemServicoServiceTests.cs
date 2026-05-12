@@ -1,4 +1,4 @@
-﻿using Mechanic.Application.DTOs.OrdemServico.Query;
+﻿using Mechanic.Application.DTOs.OrdemServico.Params;
 using Mechanic.Application.DTOs.OrdemServico.Request;
 using Mechanic.Application.Enums;
 using Mechanic.Application.Services;
@@ -98,7 +98,7 @@ public class OrdemServicoServiceTests
             {
                 Logs = new List<OrdemServicoServicoLog>
                 {
-                    new OrdemServicoServicoLog { AcaoLog = StatusServicoLog.Finalizar }
+                    new OrdemServicoServicoLog { AcaoLog = StatusServicoLog.Terminar }
                 }
             }
         }

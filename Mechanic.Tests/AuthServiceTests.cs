@@ -1,4 +1,5 @@
-﻿using Mechanic.Application.Services;
+﻿using Mechanic.Application.DTOs.Auth.Request;
+using Mechanic.Application.Services;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -27,8 +28,9 @@ public class AuthServiceTests
     public void Login_DeveRetornarNull_QuandoCredenciaisInvalidas()
     {
         var service = CreateService();
+        var dto = new LoginRequestDto{ Username = "admin", Password = "wrongpassword" };
 
-        var result = service.Login("admin", "wrong");
+        var result = service.Login(dto);
 
         Assert.Null(result);
     }
@@ -37,22 +39,21 @@ public class AuthServiceTests
     public void Login_DeveRetornarToken_QuandoCredenciaisValidas()
     {
         var service = CreateService();
-
-        var result = service.Login("admin", "123456");
+        var dto = new LoginRequestDto { Username = "admin", Password = "123456" };
+        var result = service.Login(dto);
 
         Assert.NotNull(result);
-        Assert.NotEmpty(result);
     }
 
     [Fact]
     public void Login_DeveConterClaimsCorretas_NoToken()
     {
         var service = CreateService();
-
-        var tokenString = service.Login("admin", "123456");
+        var dto = new LoginRequestDto { Username = "admin", Password = "123456" };
+        var tokenString = service.Login(dto);
 
         var handler = new JwtSecurityTokenHandler();
-        var token = handler.ReadJwtToken(tokenString);
+        var token = handler.ReadJwtToken(tokenString!.Token);
 
         var nameClaim = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
         var roleClaim = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
@@ -65,11 +66,11 @@ public class AuthServiceTests
     public void Login_DeveTerExpiracaoDe2Horas()
     {
         var service = CreateService();
-
-        var tokenString = service.Login("admin", "123456");
+        var dto = new LoginRequestDto { Username = "admin", Password = "123456" };
+        var tokenString = service.Login(dto);
 
         var handler = new JwtSecurityTokenHandler();
-        var token = handler.ReadJwtToken(tokenString);
+        var token = handler.ReadJwtToken(tokenString!.Token);
 
         var expected = DateTime.UtcNow.AddHours(2);
 

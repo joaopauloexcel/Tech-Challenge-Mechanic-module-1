@@ -5,19 +5,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable disable
 
 namespace Mechanic.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
+    [ExcludeFromCodeCoverage]
     partial class AppDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -206,6 +208,67 @@ namespace Mechanic.Infrastructure.Data.Migrations
                     b.ToTable("OrdemServicoProdutos");
                 });
 
+            modelBuilder.Entity("Mechanic.Domain.Entities.OrdemServicoServico", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("OSId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OSOrcamentoId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PrecoPraticado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ServicoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OSId");
+
+                    b.HasIndex("OSOrcamentoId");
+
+                    b.HasIndex("ServicoId");
+
+                    b.ToTable("OrdemServicoServicos");
+                });
+
+            modelBuilder.Entity("Mechanic.Domain.Entities.OrdemServicoServicoLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcaoLog")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OSId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OSServicoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OSId");
+
+                    b.HasIndex("OSServicoId");
+
+                    b.ToTable("OrdemServicoServicoLogs");
+                });
+
             modelBuilder.Entity("Mechanic.Domain.Entities.Produto", b =>
                 {
                     b.Property<int>("Id")
@@ -337,70 +400,9 @@ namespace Mechanic.Infrastructure.Data.Migrations
                     b.ToTable("Veiculos");
                 });
 
-            modelBuilder.Entity("OrdemServicoServico", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("OSId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OSOrcamentoId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PrecoPraticado")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ServicoId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OSId");
-
-                    b.HasIndex("OSOrcamentoId");
-
-                    b.HasIndex("ServicoId");
-
-                    b.ToTable("OrdemServicoServicos");
-                });
-
-            modelBuilder.Entity("OrdemServicoServicoLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AcaoLog")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("OSId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OSServicoId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OSId");
-
-                    b.HasIndex("OSServicoId");
-
-                    b.ToTable("OrdemServicoServicoLogs");
-                });
-
             modelBuilder.Entity("Mechanic.Domain.Entities.Cliente", b =>
                 {
-                    b.OwnsOne("Mechanic.Domain.ValueObjects.CpfCnpj", "CpfCnpj", b1 =>
+                    b.OwnsOne("Mechanic.Domain.Validacoes.Documentos", "CpfCnpj", b1 =>
                         {
                             b1.Property<int>("ClienteId")
                                 .HasColumnType("int");
@@ -482,18 +484,7 @@ namespace Mechanic.Infrastructure.Data.Migrations
                     b.Navigation("Produto");
                 });
 
-            modelBuilder.Entity("Mechanic.Domain.Entities.Veiculo", b =>
-                {
-                    b.HasOne("Mechanic.Domain.Entities.Cliente", "Cliente")
-                        .WithMany()
-                        .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Cliente");
-                });
-
-            modelBuilder.Entity("OrdemServicoServico", b =>
+            modelBuilder.Entity("Mechanic.Domain.Entities.OrdemServicoServico", b =>
                 {
                     b.HasOne("Mechanic.Domain.Entities.OrdemServico", "OrdemServico")
                         .WithMany("Servicos")
@@ -519,7 +510,7 @@ namespace Mechanic.Infrastructure.Data.Migrations
                     b.Navigation("Servico");
                 });
 
-            modelBuilder.Entity("OrdemServicoServicoLog", b =>
+            modelBuilder.Entity("Mechanic.Domain.Entities.OrdemServicoServicoLog", b =>
                 {
                     b.HasOne("Mechanic.Domain.Entities.OrdemServico", "OrdemServico")
                         .WithMany("Logs")
@@ -527,7 +518,7 @@ namespace Mechanic.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("OrdemServicoServico", "OrdemServicoServico")
+                    b.HasOne("Mechanic.Domain.Entities.OrdemServicoServico", "OrdemServicoServico")
                         .WithMany("Logs")
                         .HasForeignKey("OSServicoId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -536,6 +527,17 @@ namespace Mechanic.Infrastructure.Data.Migrations
                     b.Navigation("OrdemServico");
 
                     b.Navigation("OrdemServicoServico");
+                });
+
+            modelBuilder.Entity("Mechanic.Domain.Entities.Veiculo", b =>
+                {
+                    b.HasOne("Mechanic.Domain.Entities.Cliente", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
                 });
 
             modelBuilder.Entity("Mechanic.Domain.Entities.OrdemServico", b =>
@@ -556,7 +558,7 @@ namespace Mechanic.Infrastructure.Data.Migrations
                     b.Navigation("Servicos");
                 });
 
-            modelBuilder.Entity("OrdemServicoServico", b =>
+            modelBuilder.Entity("Mechanic.Domain.Entities.OrdemServicoServico", b =>
                 {
                     b.Navigation("Logs");
                 });

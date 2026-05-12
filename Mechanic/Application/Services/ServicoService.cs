@@ -1,5 +1,6 @@
-﻿using Humanizer;
-using Mechanic.Application.DTOs.Servico;
+﻿using Mechanic.Application.DTOs.Servico.Params;
+using Mechanic.Application.DTOs.Servico.Request;
+using Mechanic.Application.DTOs.Servico.Response;
 using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
 
@@ -14,11 +15,11 @@ namespace Mechanic.Application.Services
             _repository = repository;
         }
 
-        public async Task<List<ProdutoDto>> ListarTodos(string? sku)
+        public async Task<List<ServicoResponseDto>> ListarTodos(ServicoParamsDto? dto)
         {
-            var servicos = await _repository.ListarTodosAsync(sku);
+            var servicos = await _repository.ListarTodosAsync(dto?.Sku);
 
-            return servicos.Select(s => new ProdutoDto
+            return servicos.Select(s => new ServicoResponseDto
             {
                 Id = s.Id,
                 Sku = s.Sku,
@@ -28,12 +29,12 @@ namespace Mechanic.Application.Services
             }).ToList();
         }
 
-        public async Task<ProdutoDto?> ListarPorId(int id)
+        public async Task<ServicoResponseDto?> ListarPorId(int id)
         {
             var s = await _repository.ListarPorIdAsync(id);
             if (s is null) return null;
 
-            return new ProdutoDto
+            return new ServicoResponseDto
             {
                 Id = s.Id,
                 Sku = s.Sku,
@@ -43,7 +44,7 @@ namespace Mechanic.Application.Services
             };
         }
 
-        public async Task<int> Criar(AdicionarServicoDto dto)
+        public async Task<int> Criar(AdicionarServicoRequestDto dto)
         {
             var existeSku = await _repository.ExisteSkuAsync(dto.Sku);
 
@@ -62,10 +63,19 @@ namespace Mechanic.Application.Services
             return servico.Id;
         }
 
-        public async Task<bool> Atualizar(int id, AtualizarServicoDto dto)
+        public async Task<bool> Atualizar(int id, AtualizarServicoRequestDto dto)
         {
             var servico = await _repository.ListarPorIdAsync(id);
             if (servico is null) return false;
+
+            if (!string.IsNullOrWhiteSpace(dto.Sku) && dto.Sku != servico.Sku)
+            {
+                var existeSku = await _repository.ExisteSkuAsync(dto.Sku);
+                if (existeSku)
+                    throw new Exception("SKU já cadastrado");
+
+                servico.Sku = dto.Sku;
+            }
 
             if (!string.IsNullOrWhiteSpace(dto.Descricao))
                 servico.Descricao = dto.Descricao;

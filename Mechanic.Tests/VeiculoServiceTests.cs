@@ -1,11 +1,8 @@
-﻿using Mechanic.Application.DTOs.Veiculo;
+﻿using Mechanic.Application.DTOs.Veiculo.Request;
 using Mechanic.Application.Services;
 using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
 using Moq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
 
 public class VeiculoServiceTests
 {
@@ -59,7 +56,7 @@ public class VeiculoServiceTests
     [Fact]
     public async Task Criar_DeveLancarExcecao_QuandoPlacaExistir()
     {
-        var dto = new AdicionarVeiculoDto
+        var dto = new AdicionarVeiculoRequestDto
         {
             Placa = "ABC1234",
             ClienteId = 1
@@ -74,7 +71,7 @@ public class VeiculoServiceTests
     [Fact]
     public async Task Criar_DeveLancarExcecao_QuandoClienteNaoExistir()
     {
-        var dto = new AdicionarVeiculoDto
+        var dto = new AdicionarVeiculoRequestDto
         {
             Placa = "ABC1234",
             ClienteId = 1
@@ -92,7 +89,7 @@ public class VeiculoServiceTests
     [Fact]
     public async Task Criar_DeveAdicionarVeiculo()
     {
-        var dto = new AdicionarVeiculoDto
+        var dto = new AdicionarVeiculoRequestDto
         {
             ClienteId = 1,
             Placa = "ABC1234",
@@ -123,7 +120,7 @@ public class VeiculoServiceTests
         _repoMock.Setup(r => r.ListarPorIdAsync(1))
                  .ReturnsAsync((Veiculo?)null);
 
-        var result = await _service.Atualizar(1, new AtualizarVeiculoDto());
+        var result = await _service.Atualizar(1, new AtualizarVeiculoRequestDto());
 
         Assert.False(result);
     }
@@ -138,7 +135,7 @@ public class VeiculoServiceTests
             Marca = "Ford"
         };
 
-        var dto = new AtualizarVeiculoDto
+        var dto = new AtualizarVeiculoRequestDto
         {
             Placa = "NEW1234",
             Marca = "Toyota"
@@ -168,7 +165,7 @@ public class VeiculoServiceTests
             Placa = "OLD1234"
         };
 
-        var dto = new AtualizarVeiculoDto
+        var dto = new AtualizarVeiculoRequestDto
         {
             Placa = "NEW1234"
         };

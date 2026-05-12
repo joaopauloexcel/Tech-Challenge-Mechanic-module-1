@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Mechanic.Domain.ValueObjects;
+using Mechanic.Domain.Validacoes;
 
 namespace Mechanic.Domain.Entities
 {
@@ -11,7 +11,7 @@ namespace Mechanic.Domain.Entities
         public string Nome { get; set; } = string.Empty;
 
         [Required, MaxLength(18, ErrorMessage = "O CPF/CNPJ deve ter no máximo 18 caracteres.")]
-        public CpfCnpj CpfCnpj { get; private set; } = null!;
+        public Documentos CpfCnpj { get; private set; } = null!;
 
         [Required, MaxLength(15, ErrorMessage = "O telefone deve ter no máximo 15 caracteres.")]
         public string Telefone1 { get; set; } = string.Empty;
@@ -29,7 +29,7 @@ namespace Mechanic.Domain.Entities
 
         public void SetDocument(string cpfCnpj)
         {
-            CpfCnpj = CpfCnpj.Create(cpfCnpj);
+            CpfCnpj = Documentos.Create(cpfCnpj);
         }
     }
 }

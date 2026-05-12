@@ -1,4 +1,6 @@
-﻿using Mechanic.Application.DTOs.Cliente;
+﻿using Mechanic.Application.DTOs.Cliente.Request;
+using Mechanic.Application.DTOs.Cliente.Response;
+using Mechanic.Application.DTOs.Cliente.Params;
 using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
 
@@ -13,11 +15,11 @@ namespace Mechanic.Application.Services
             _repository = repository;
         }
 
-        public async Task<List<ClienteDto>> ListarTodos(string? cpfCnpj)
+        public async Task<List<ClienteResponseDto>> ListarTodos(ClienteParamsDto? dto)
         {
-            var clientes = await _repository.ListarTodosAsync(cpfCnpj);
+            var clientes = await _repository.ListarTodosAsync(dto?.CpfCnpj);
 
-            return clientes.Select(c => new ClienteDto
+            return clientes.Select(c => new ClienteResponseDto
             {
                 Id = c.Id,
                 Nome = c.Nome,
@@ -29,12 +31,12 @@ namespace Mechanic.Application.Services
             }).ToList();
         }
 
-        public async Task<ClienteDto?> ListarPorId(int id)
+        public async Task<ClienteResponseDto?> ListarPorId(int id)
         {
             var c = await _repository.ListarPorIdAsync(id);
             if (c is null) return null;
 
-            return new ClienteDto
+            return new ClienteResponseDto
             {
                 Id = c.Id,
                 Nome = c.Nome,
@@ -46,7 +48,7 @@ namespace Mechanic.Application.Services
             };
         }
 
-        public async Task<int> Criar(AdicionarClienteDto dto)
+        public async Task<int> Criar(AdicionarClienteRequestDto dto)
         {
 
             var existe = await _repository.ExisteCpfCnpjAsync(dto.CpfCnpj);
@@ -71,7 +73,7 @@ namespace Mechanic.Application.Services
             return cliente.Id;
         }
 
-        public async Task<bool> Atualizar(int id, AtualizarServicoDto dto)
+        public async Task<bool> Atualizar(int id, AtualizarClienteRequestDto dto)
         {
             var cliente = await _repository.ListarPorIdAsync(id);
             if (cliente is null) return false;

@@ -36,5 +36,3 @@ namespace Mechanic.Infrastructure.Repositories
         }
     }
 }
-
-// 

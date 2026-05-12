@@ -403,7 +403,7 @@ namespace Mechanic.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Mechanic.Domain.Entities.Cliente", b =>
                 {
-                    b.OwnsOne("Mechanic.Domain.ValueObjects.CpfCnpj", "CpfCnpj", b1 =>
+                    b.OwnsOne("Mechanic.Domain.Validacoes.CpfCnpj", "CpfCnpj", b1 =>
                         {
                             b1.Property<int>("ClienteId")
                                 .HasColumnType("int");

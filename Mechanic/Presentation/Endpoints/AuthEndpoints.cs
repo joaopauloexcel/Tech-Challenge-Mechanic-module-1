@@ -1,5 +1,7 @@
 ﻿using Mechanic.Application.DTOs.Auth;
+using Mechanic.Application.DTOs.Auth.Request;
 using Mechanic.Application.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Mechanic.Presentation.Endpoints;
 
@@ -7,9 +9,13 @@ public static class AuthEndpoints
 {
     public static void MapAuthEndpoints(this IEndpointRouteBuilder routes)
     {
-        routes.MapPost("/api/auth/login", (LoginDto dto, AuthService service) =>
+        var group = routes
+          .MapGroup("/api/auth")
+          .WithTags("Auth");
+
+        group.MapPost("/login", ([FromBody] LoginRequestDto dto, [FromKeyedServices] AuthService service) =>
         {
-            var token = service.Login(dto.Username, dto.Password);
+            var token = service.Login(dto);
 
             return token is null
                 ? Results.Unauthorized()
@@ -18,7 +24,7 @@ public static class AuthEndpoints
         .WithName("Login")
         .WithSummary("Autentica o usuário")
         .WithDescription("Realiza login com username e senha e retorna um JWT token.")
-        .Produces<object>(StatusCodes.Status200OK)
+        .Produces<LoginResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
     }
 }

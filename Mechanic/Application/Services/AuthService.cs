@@ -1,4 +1,6 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Mechanic.Application.DTOs.Auth;
+using Mechanic.Application.DTOs.Auth.Request;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -14,9 +16,9 @@ namespace Mechanic.Application.Services
             _config = config;
         }
 
-        public string? Login(string username, string password)
+        public LoginResponseDto? Login(LoginRequestDto dto)
         {
-            if (username != "admin" || password != "123456")
+            if (dto.Username != "admin" || dto.Password != "123456")
                 return null;
 
             var jwtSettings = _config.GetSection("Jwt");
@@ -24,7 +26,7 @@ namespace Mechanic.Application.Services
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Name, dto.Username),
                 new Claim(ClaimTypes.Role, "Admin")
             };
 
@@ -39,7 +41,12 @@ namespace Mechanic.Application.Services
                 )
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return new LoginResponseDto
+            {
+                Token = tokenString
+            };
         }
     }
 }

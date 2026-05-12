@@ -21,8 +21,16 @@ namespace Mechanic.UnitOfWork
 
         public async Task CommitAsync()
         {
+            // Adicione esta linha! Ela é o "gatilho" que gera o INSERT/UPDATE no banco
+            await _context.SaveChangesAsync();
+
             if (_transaction != null)
+            {
                 await _transaction.CommitAsync();
+                // Opcional: limpe a transação após o commit
+                await _transaction.DisposeAsync();
+                _transaction = null;
+            }
         }
 
         public async Task RollbackAsync()

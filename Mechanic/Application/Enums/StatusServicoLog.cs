@@ -11,7 +11,7 @@ namespace Mechanic.Application.Enums
         [Description("Pausar")]
         Pausar,
 
-        [Description("Finalizar")]
-        Finalizar
+        [Description("Terminar")]
+        Terminar
     }
 }

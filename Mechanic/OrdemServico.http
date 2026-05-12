@@ -3,8 +3,7 @@
 ###
 
 # Copie o token retornado e cole abaixo
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc3ODAyOTc3MywiaXNzIjoiTWVjaGFuaWNBUEkiLCJhdWQiOiJNZWNoYW5pY0FQSSJ9.8yp5SPiHpzGV19Tx6gyV0YoOUo7cAaytc7C71Mb_o7Q
-
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc3ODU4MTI2MiwiaXNzIjoiTWVjaGFuaWNBUEkiLCJhdWQiOiJNZWNoYW5pY0FQSSJ9.A7V88H7NCkns-PunvMo4ScduqZocIrk_bQmZHnbcLvE
 
 ###
 
@@ -33,7 +32,7 @@ Content-Type: application/json
 
 # =========================
 
-GET {{Mechanic_HostAddress}}/api/ordens-servico?status=2
+GET {{Mechanic_HostAddress}}/api/ordens-servico
 Authorization: Bearer {{token}}
 
 ###
@@ -51,11 +50,11 @@ Authorization: Bearer {{token}}
 
 # =========================
 
-# Obter OS por HASH (público)
+# Obter OS por HASH (público) + 3 últimos dígitos do Cpf/Cnpj
 
 # =========================
 
-GET {{Mechanic_HostAddress}}/api/ordens-servico/externo/da3e3383029e48d49ffb73f1a23b991f
+GET {{Mechanic_HostAddress}}/api/ordem-servico/externo/da3e3383029e48d49ffb73f1a23b991f/080
 Authorization: Bearer {{token}}
 
 ###
@@ -106,7 +105,7 @@ Content-Type: application/json
 
 # =========================
 
-PATCH {{Mechanic_HostAddress}}/api/ordens-servico/1/orcamentos/1/decisao
+PATCH {{Mechanic_HostAddress}}/api/ordem-servico/externo/da3e3383029e48d49ffb73f1a23b991f/080/orcamento/1
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
@@ -122,7 +121,7 @@ Content-Type: application/json
 
 # =========================
 
-PATCH {{Mechanic_HostAddress}}/api/ordens-servico/1/orcamentos/1/decisao
+PATCH {{Mechanic_HostAddress}}/api/ordem-servico/externo/da3e3383029e48d49ffb73f1a23b991f/080/orcamento/1
 Authorization: Bearer {{token}}
 Content-Type: application/json
 

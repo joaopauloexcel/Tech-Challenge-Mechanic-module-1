@@ -1,4 +1,4 @@
-﻿using Mechanic.Application.DTOs.OrdemServico.Query;
+﻿using Mechanic.Application.DTOs.OrdemServico.Params;
 using Mechanic.Application.DTOs.OrdemServico.Request;
 using Mechanic.Application.DTOs.OrdemServico.Response;
 using Mechanic.Application.Enums;
@@ -35,18 +35,36 @@ namespace Mechanic.Application.Services
             _uow = uow;
         }
 
-        private OrdemServicoDTO MapToDto(OrdemServico os)
+        private OrdemServicoResponseDto MapToDto(OrdemServico os)
         {
             var orcamentos = os.Orcamentos.Select(o =>
             {
                 var totalProdutos = o.Produtos.Sum(p => p.Quantidade * p.PrecoPraticado);
                 var totalServicos = o.Servicos.Sum(s => s.PrecoPraticado);
 
-                return new OrdemServicoOrcamentoDetalhadoDto
+                return new OrdemServicoOrcamentoResponseDto
                 {
+                    OSOrcamentoId = o.Id,
                     Descricao = o.Descricao,
                     StatusOrcamento = o.StatusOrcamento.ToString(),
-                    PrecoTotal = totalProdutos + totalServicos
+                    PrecoTotal = totalProdutos + totalServicos,
+  
+                    ServicosOrcamentoOS = o.Servicos.Select(s => new OrdemServicoServicoResponseDto
+                    {
+                        ServicoOrcadoId = s.ServicoId,
+                        SkuServicoOrcado = s.Servico.Sku,
+                        DescricaoServicoOrcado = s.Servico.Descricao,
+                        PrecoServicoOrcado = s.PrecoPraticado
+                    }).ToList(),
+
+                    ProdutosOrcamentoOS = o.Produtos.Select(p => new OrdemServicoProdutoResponseDto
+                    {
+                        ProdutoOrcadoId = p.ProdutoId,
+                        SkuProdutoOrcado = p.Produto.Sku,
+                        QtdProdutoOrcado = p.Quantidade,
+                        PrecoUnitarioProdutoOrcado = p.PrecoPraticado,
+                        PrecoTotalProduto = p.Quantidade * p.PrecoPraticado
+                    }).ToList()
                 };
             }).ToList();
 
@@ -60,7 +78,7 @@ namespace Mechanic.Application.Services
                 .Sum(o => o.Produtos.Sum(p => p.Quantidade * p.PrecoPraticado)
                        + o.Servicos.Sum(s => s.PrecoPraticado));
 
-            return new OrdemServicoDTO
+            return new OrdemServicoResponseDto
             {
                 OrdensServicoId = os.Id,
                 TituloOS = os.Titulo,
@@ -74,9 +92,9 @@ namespace Mechanic.Application.Services
                 DataCancelamento = os.DataCancelamento,
 
                 NomeCliente = os.Cliente?.Nome,
-                CpfCnpjCliente = os.Cliente?.CpfCnpj?.Value,
+                CpfCnpjCliente = os.Cliente!.CpfCnpj.Value,
 
-                PlacaVeiculo = os.Veiculo?.Placa,
+                PlacaVeiculo = os.Veiculo.Placa,
                 MarcaVeiculo = os.Veiculo?.Marca,
                 ModeloVeiculo = os.Veiculo?.Modelo,
                 AnoVeiculo = os.Veiculo?.Ano,
@@ -94,7 +112,7 @@ namespace Mechanic.Application.Services
             };
         }
 
-        public async Task<int> AdicionarOSAsync(CriarOrdemServicoDto dto)
+        public async Task<int> AdicionarOSAsync(CriarOrdemServicoRequestDto dto)
         {
             var os = new OrdemServico
             {
@@ -114,25 +132,55 @@ namespace Mechanic.Application.Services
             return os.Id;
         }
 
-        public async Task<List<OrdemServicoDTO>> ListarTodosAsync(ListarOrdemServicoFiltroDto filtro)
+        public async Task<List<OrdemServicoResponseDto>> ListarTodosAsync(ListarOrdemServicoParamsDto dto)
         {
-            var lista = await _osRepo.ListarAsync(filtro);
+            var lista = await _osRepo.ListarAsync(dto);
 
             return lista.Select(MapToDto).ToList();
         }
 
-        public async Task<OrdemServicoDTO?> ListarPorIdAsync(int id)
+        public async Task<OrdemServicoResponseDto?> ListarPorIdAsync(int id)
         {
             var os = await _osRepo.ObterPorIdAsync(id);
 
             return os is null ? null : MapToDto(os);
         }
 
-        public async Task<OrdemServicoDTO?> ListarPorHashExternoAsync(string hashExterno)
+        private static bool SafeEquals(string a, string b)
         {
+            if (a.Length != b.Length) return false;
+
+            var result = 0;
+            for (int i = 0; i < a.Length; i++)
+                result |= a[i] ^ b[i];
+
+            return result == 0;
+        }
+
+        public async Task<OrdemServicoResponseDto?> ListarPorHashExternoAsync(string hashExterno, string docFinal)
+        {
+            if (string.IsNullOrWhiteSpace(docFinal) || docFinal.Length != 3)
+                return null;
+
             var os = await _osRepo.ObterPorComHashAsync(hashExterno);
 
-            return os is null ? null : MapToDto(os);
+            if (os is null)
+                return null;
+
+            var documento = os.Cliente.CpfCnpj.Value;
+
+            if (string.IsNullOrEmpty(documento) || documento.Length < 3)
+                return null;
+
+            var ultimosDigitos = documento[^3..];
+
+            if (ultimosDigitos != docFinal)
+                return null;
+
+            if (!SafeEquals(ultimosDigitos, docFinal))
+                return null;
+
+            return MapToDto(os);
         }
 
         public async Task IniciarDiagnosticoAsync(int osId)
@@ -152,7 +200,7 @@ namespace Mechanic.Application.Services
             await _osRepo.SalvarAsync();
         }
 
-        public async Task EnviarOrcamentoAsync(int osId, CriarOrcamentoDto dto)
+        public async Task EnviarOrcamentoAsync(int osId, CriarOrcamentoRequestDto dto)
         {
             await _uow.BeginTransactionAsync();
 
@@ -179,52 +227,64 @@ namespace Mechanic.Application.Services
                 await _orcRepo.AdicionarAsync(orcamento);
                 await _osRepo.SalvarAsync();
 
+                os.Orcamentos ??= new List<OrdemServicoOrcamento>();
+                os.Orcamentos.Add(orcamento);
+
                 if (os.Status == StatusOrdemServico.EmDiagnostico)
                 {
                     os.Status = StatusOrdemServico.EmAprovacao;
                     os.DataFimDiagnostico = DateTime.UtcNow;
                 }
 
-                foreach (var prod in dto.ProdutosOS)
+                foreach (var prod in dto.ProdutosOrcamentoOS)
                 {
-                    var produto = await _produtoRepo.ListarPorIdAsync(prod.ProdutoId);
+                    var produto = await _produtoRepo.ListarPorIdAsync(prod.ProdutoIdOrcamento);
 
                     if (produto is null)
                         throw new Exception("Produto não encontrado.");
 
                     var disponivel = produto.QuantidadeTotal - produto.QuantidadeReservada;
 
-                    if (prod.QtdProduto > disponivel)
+                    if (prod.QtdProdutoOrcamento > disponivel)
                         throw new Exception("Estoque insuficiente.");
 
-                    produto.QuantidadeReservada += prod.QtdProduto;
+                    produto.QuantidadeReservada += prod.QtdProdutoOrcamento;
 
                     await _produtoRepo.AtualizarAsync(produto);
 
-                    await _osProdRepo.AdicionarAsync(new OrdemServicoProduto
+                    var produtoEntity = new OrdemServicoProduto
                     {
                         OSId = os.Id,
                         OSOrcamentoId = orcamento.Id,
-                        ProdutoId = prod.ProdutoId,
-                        Quantidade = prod.QtdProduto,
-                        PrecoPraticado = prod.PrecoUnitarioProduto,
+                        ProdutoId = prod.ProdutoIdOrcamento,
+                        Quantidade = prod.QtdProdutoOrcamento,
+                        PrecoPraticado = prod.PrecoUnitarioProdutoOrcamento,
                         StatusItem = StatusItemProduto.Reservado
-                    });
+                    };
+
+                    await _osProdRepo.AdicionarAsync(produtoEntity);
+
+                    orcamento.Produtos ??= new List<OrdemServicoProduto>();
+                    orcamento.Produtos.Add(produtoEntity);
                 }
 
-                foreach (var serv in dto.ServicosOS)
+                foreach (var serv in dto.ServicosOrcamentoOS)
                 {
-                    await _osServRepo.AdicionarAsync(new OrdemServicoServico
+                    var servicoEntity = new OrdemServicoServico
                     {
                         OSId = os.Id,
                         OSOrcamentoId = orcamento.Id,
-                        ServicoId = serv.ServicoId,
-                        PrecoPraticado = serv.PrecoServico
-                    });
+                        ServicoId = serv.ServicoIdOrcamento,
+                        PrecoPraticado = serv.PrecoServicoOrcamento
+                    };
+
+                    await _osServRepo.AdicionarAsync(servicoEntity);
+
+                    orcamento.Servicos ??= new List<OrdemServicoServico>();
+                    orcamento.Servicos.Add(servicoEntity);
                 }
 
                 await _osRepo.AtualizarAsync(os);
-                await _osRepo.SalvarAsync();
 
                 await _uow.CommitAsync();
             }
@@ -234,84 +294,96 @@ namespace Mechanic.Application.Services
                 throw;
             }
         }
-
-        public async Task DecidirOrcamentoAsync(int osId, int orcamentoId, DecisaoOrcamentoInputDto dto)
+        public async Task DecidirOrcamentoPorHashExternoAsync(
+            string hashExterno,
+            string docFinal,
+            int orcamentoId,
+            DecisaoOrcamentoRequestDto dto)
         {
             await _uow.BeginTransactionAsync();
 
             try
             {
-                var os = await _osRepo.ObterPorIdAsync(osId);
+                docFinal = new string(docFinal.Where(char.IsDigit).ToArray());
+
+                if (docFinal.Length != 3)
+                    throw new Exception("OS ou Orçamento não encontrado.");
+
+                var os = await _osRepo.ObterPorComHashAsync(hashExterno);
+
+                if (os is null)
+                    throw new Exception("OS ou Orçamento não encontrado.");
+
+                var documento = os.Cliente?.CpfCnpj?.Value;
+
+                if (string.IsNullOrEmpty(documento) || documento.Length < 3)
+                    throw new Exception("OS ou Orçamento não encontrado.");
+
+                var ultimosDigitos = documento[^3..];
+
+                if (!SafeEquals(ultimosDigitos, docFinal))
+                    throw new Exception("OS ou Orçamento não encontrado.");
+
                 var orcamento = await _orcRepo.ObterPorIdAsync(orcamentoId);
 
-                var produtosDoOrcamento = await _osProdRepo.ListarPorOrcamentoIdAsync(orcamentoId);
-
-                if (os is null || orcamento is null)
+                if (orcamento is null || orcamento.OSId != os.Id)
                     throw new Exception("OS ou Orçamento não encontrado.");
 
                 if (orcamento.StatusOrcamento != StatusOrcamento.Pendente)
                     throw new Exception("Este orçamento já foi processado.");
 
-                // 2. Lógica de Aprovação
+                var produtosDoOrcamento = await _osProdRepo.ListarPorOrcamentoIdAsync(orcamentoId);
+
                 if (dto.Aprovar)
                 {
                     orcamento.StatusOrcamento = StatusOrcamento.Aprovado;
                     orcamento.DataAprovacaoOrcamento = DateTime.UtcNow;
 
-                    // Regra: Se estava em aprovação, move a OS para execução
                     if (os.Status == StatusOrdemServico.EmAprovacao)
                     {
                         os.Status = StatusOrdemServico.EmExecucao;
                         os.DataInicioExecucao = DateTime.UtcNow;
                     }
 
-                    // Processar itens (Produtos)
                     foreach (var itemOS in produtosDoOrcamento)
                     {
-                        // Altera status do item na OS
                         itemOS.StatusItem = StatusItemProduto.Confirmado;
                         await _osProdRepo.AtualizarAsync(itemOS);
 
-                        // Baixa no estoque real
-                        var produtoEstoque = await _produtoRepo.ListarPorIdAsync(itemOS.ProdutoId);
-                        if (produtoEstoque != null)
+                        var produto = await _produtoRepo.ListarPorIdAsync(itemOS.ProdutoId);
+                        if (produto != null)
                         {
-                            produtoEstoque.QuantidadeTotal -= itemOS.Quantidade;
-                            produtoEstoque.QuantidadeReservada -= itemOS.Quantidade;
-                            await _produtoRepo.AtualizarAsync(produtoEstoque);
+                            if (produto.QuantidadeTotal < itemOS.Quantidade)
+                                throw new Exception("Estoque insuficiente.");
+
+                            produto.QuantidadeTotal -= itemOS.Quantidade;
+                            produto.QuantidadeReservada -= itemOS.Quantidade;
+
+                            await _produtoRepo.AtualizarAsync(produto);
                         }
                     }
                 }
-                // 3. Lógica de Reprovação
                 else
                 {
                     orcamento.StatusOrcamento = StatusOrcamento.Reprovado;
 
                     foreach (var itemOS in produtosDoOrcamento)
                     {
-                        // Cancela o item
                         itemOS.StatusItem = StatusItemProduto.Cancelado;
                         await _osProdRepo.AtualizarAsync(itemOS);
 
-                        // Estorna a reserva do estoque
-                        var produtoEstoque = await _produtoRepo.ListarPorIdAsync(itemOS.ProdutoId);
-                        if (produtoEstoque != null)
+                        var produto = await _produtoRepo.ListarPorIdAsync(itemOS.ProdutoId);
+                        if (produto != null)
                         {
-                            produtoEstoque.QuantidadeReservada -= itemOS.Quantidade;
-                            await _produtoRepo.AtualizarAsync(produtoEstoque);
+                            produto.QuantidadeReservada -= itemOS.Quantidade;
+                            await _produtoRepo.AtualizarAsync(produto);
                         }
                     }
-
-                    // Se a OS não tiver outros orçamentos aprovados e estiver "Em Aprovação", 
-                    // talvez devesse voltar para "Em Diagnóstico"? 
-                    // (Ajuste conforme sua necessidade de negócio específica)
                 }
 
-                // Atualizar Entidades Principais
                 await _orcRepo.AtualizarAsync(orcamento);
                 await _osRepo.AtualizarAsync(os);
 
-                await _osRepo.SalvarAsync();
                 await _uow.CommitAsync();
             }
             catch
@@ -321,21 +393,7 @@ namespace Mechanic.Application.Services
             }
         }
 
-        private async Task AdicionarLog(OrdemServicoServico servico, ExecutarServicoLogDto dto)
-        {
-            var log = new OrdemServicoServicoLog
-            {
-                OSId = servico.OSId,
-                OSServicoId = servico.Id,
-                AcaoLog = dto.Acao,
-                DataCriacao = DateTime.UtcNow
-            };
-            System.Diagnostics.Debug.WriteLine(log);
-            await _osLogRepo.AdicionarAsync(log);
-            await _uow.CommitAsync();
-        }
-
-        public async Task ExecutarServicoLogAsync(int osId, int orcId, int servId, ExecutarServicoLogDto dto)
+        public async Task ExecutarServicoLogAsync(int osId, int orcId, int servId, ExecutarServicoLogRequestDto dto)
         {
             var os = await _osRepo.ObterComServicosAsync(osId)
                 ?? throw new Exception("OS não encontrada");
@@ -361,7 +419,7 @@ namespace Mechanic.Application.Services
                 StatusServicoLog.Pausar =>
                     ultimaAcao == StatusServicoLog.Iniciar,
 
-                StatusServicoLog.Finalizar =>
+                StatusServicoLog.Terminar =>
                     ultimaAcao == StatusServicoLog.Iniciar ||
                     ultimaAcao == StatusServicoLog.Pausar,
 
@@ -371,11 +429,21 @@ namespace Mechanic.Application.Services
             System.Diagnostics.Debug.WriteLine($"Pode executar: {podeExecutar}");
 
             if (!podeExecutar)
-                throw new Exception("Ação inválida para o estado atual do serviço");
+                throw new Exception($"Ação inválida para o estado atual do serviço: {ultimaAcao}");
 
             try
             {
-                await AdicionarLog(servico, dto);
+                var novoLog = new OrdemServicoServicoLog
+                {
+                    OSId = os.Id,
+                    OSServicoId = servico.Id,
+                    AcaoLog = dto.Acao,
+                    DataCriacao = DateTime.UtcNow
+                };
+
+                await _osLogRepo.AdicionarAsync(novoLog);
+
+                await _uow.CommitAsync();
             }
             catch (Exception ex)
             {
@@ -413,9 +481,8 @@ namespace Mechanic.Application.Services
             if (os.PossuiOrcamentoPendente)
                 throw new Exception("Não é possível finalizar OS com orçamento pendente");
 
-            // 🔎 valida se existe serviço com orçamento aprovado sem finalização
             var todosFinalizados = os.Servicos.All(s =>
-                s.Logs.Any(l => l.AcaoLog == StatusServicoLog.Finalizar)
+                s.Logs.Any(l => l.AcaoLog == StatusServicoLog.Terminar)
             );
 
             if (!todosFinalizados)
@@ -443,9 +510,9 @@ namespace Mechanic.Application.Services
             await _uow.CommitAsync();
         }
 
-        private List<TempoMedioServicoDto> CalcularTempoMedioPorServico(List<OrdemServicoServicoLog> logs)
+        private List<TempoMedioServicoResponseDto> CalcularTempoMedioPorServico(List<OrdemServicoServicoLog> logs)
         {
-            var result = new List<TempoMedioServicoDto>();
+            var result = new List<TempoMedioServicoResponseDto>();
 
             var logsAgrupados = logs
                 .GroupBy(l => l.OSServicoId);
@@ -469,7 +536,7 @@ namespace Mechanic.Application.Services
                         .Skip(i + 1)
                         .FirstOrDefault(x =>
                             x.AcaoLog == StatusServicoLog.Pausar ||
-                            x.AcaoLog == StatusServicoLog.Finalizar);
+                            x.AcaoLog == StatusServicoLog.Terminar);
 
                     if (fim is null)
                         continue;
@@ -480,7 +547,7 @@ namespace Mechanic.Application.Services
 
                 var servico = grupo.First().OrdemServicoServico.Servico;
 
-                result.Add(new TempoMedioServicoDto
+                result.Add(new TempoMedioServicoResponseDto
                 {
                     Servico = servico.Descricao,
                     MediaMinutos = pares.Count == 0 ? 0 : pares.Average(),
@@ -491,7 +558,7 @@ namespace Mechanic.Application.Services
             return result;
         }
 
-        private async Task<TempoMedioOSDto> CalcularTempoMedioPorOSAsync()
+        private async Task<TempoMedioOSResponseDto> CalcularTempoMedioPorOSAsync()
         {
             var osList = await _osRepo.ObterFinalizadasAsync();
 
@@ -500,21 +567,21 @@ namespace Mechanic.Application.Services
                 .Select(x => (x.DataFinalizacao!.Value - x.DataCriacao).TotalMinutes)
                 .ToList();
 
-            return new TempoMedioOSDto
+            return new TempoMedioOSResponseDto
             {
                 MediaMinutos = tempos.Count == 0 ? 0 : tempos.Average(),
                 TotalOS = tempos.Count
             };
         }
 
-        public async Task<RelatorioTempoMedioDto> GetTempoMedioExecucaoAsync()
+        public async Task<RelatorioTempoMedioResponseDto> GetTempoMedioExecucaoAsync()
         {
             var logs = await _osLogRepo.ObterLogsServicosAsync();
 
             var porServico = CalcularTempoMedioPorServico(logs);
             var porOS = await CalcularTempoMedioPorOSAsync();
 
-            return new RelatorioTempoMedioDto
+            return new RelatorioTempoMedioResponseDto
             {
                 PorServico = porServico,
                 PorOS = porOS

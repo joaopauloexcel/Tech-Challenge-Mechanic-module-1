@@ -1,4 +1,6 @@
-﻿using Mechanic.Application.DTOs.Produto;
+﻿using Mechanic.Application.DTOs.Produto.Request;
+using Mechanic.Application.DTOs.Produto.Response;
+using Mechanic.Application.DTOs.Produto.Params;
 using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
 
@@ -13,11 +15,11 @@ namespace Mechanic.Application.Services
             _repository = repository;
         }
 
-        public async Task<List<ProdutoDto>> ListarTodos(string? sku)
+        public async Task<List<ProdutoResponseDto>> ListarTodos(ProdutoParamsDto? dto)
         {
-            var produtos = await _repository.ListarTodosAsync(sku);
+            var produtos = await _repository.ListarTodosAsync(dto?.Sku);
 
-            return produtos.Select(p => new ProdutoDto
+            return produtos.Select(p => new ProdutoResponseDto
             {
                 Id = p.Id,
                 Sku = p.Sku,
@@ -31,12 +33,12 @@ namespace Mechanic.Application.Services
             }).ToList();
         }
 
-        public async Task<ProdutoDto?> ListarPorId(int id)
+        public async Task<ProdutoResponseDto?> ListarPorId(int id)
         {
             var p = await _repository.ListarPorIdAsync(id);
             if (p is null) return null;
 
-            return new ProdutoDto
+            return new ProdutoResponseDto
             {
                 Id = p.Id,
                 Sku = p.Sku,
@@ -50,7 +52,7 @@ namespace Mechanic.Application.Services
             };
         }
 
-        public async Task<int> Criar(AdicionarProdutoDto dto)
+        public async Task<int> Criar(AdicionarProdutoRequestDto dto)
         {
             var existeSku = await _repository.ExisteSkuAsync(dto.Sku);
 
@@ -64,7 +66,7 @@ namespace Mechanic.Application.Services
                 PrecoCusto = dto.PrecoCusto,
                 PrecoVenda = dto.PrecoVenda,
                 QuantidadeTotal = dto.QuantidadeTotal,
-                QuantidadeReservada = dto.QuantidadeReservada,
+                QuantidadeReservada = 0,
                 QuantidadeMinima = dto.QuantidadeMinima,
                 Ativo = true
             };
@@ -74,7 +76,7 @@ namespace Mechanic.Application.Services
             return produto.Id;
         }
 
-        public async Task<bool> Atualizar(int id, AtualizarProdutoDto dto)
+        public async Task<bool> Atualizar(int id, AtualizarProdutoRequestDto dto)
         {
             var produto = await _repository.ListarPorIdAsync(id);
             if (produto is null) return false;
@@ -88,22 +90,29 @@ namespace Mechanic.Application.Services
                 produto.Sku = dto.Sku;
             }
 
-            produto.Descricao = dto.Descricao;
-            produto.PrecoCusto = dto.PrecoCusto;
-            produto.PrecoVenda = dto.PrecoVenda;
-            produto.QuantidadeMinima = dto.QuantidadeMinima;
+            if (!string.IsNullOrWhiteSpace(dto.Descricao))
+                produto.Descricao = dto.Descricao;
+
+            if (dto.PrecoCusto is not null)
+                produto.PrecoCusto = (decimal)dto.PrecoCusto;
+
+            if (dto.PrecoVenda is not null)
+                produto.PrecoVenda = (decimal)dto.PrecoVenda;
+
+            if (dto.QuantidadeMinima is not null)
+                produto.QuantidadeMinima = (int)dto.QuantidadeMinima;
 
             await _repository.AtualizarAsync(produto);
 
             return true;
         }
 
-        public async Task<bool> AtualizarEstoque(int id, AtualizarEstoqueProdutoDto dto)
+        public async Task<bool> AtualizarEstoque(int id, AtualizarEstoqueProdutoRequestDto dto)
         {
             var produto = await _repository.ListarPorIdAsync(id);
             if (produto is null) return false;
 
-            produto.QuantidadeTotal += dto.quantidadeAdicionada;
+            produto.QuantidadeTotal += dto.QuantidadeAdicionada;
 
             if (dto.NovoPrecoCusto > 0)
                 produto.PrecoCusto = dto.NovoPrecoCusto;

@@ -1,6 +1,6 @@
-﻿using Mechanic.Domain.Entities;
-using Mechanic.Domain.Interfaces;
+﻿using Mechanic.Domain.Interfaces;
 using Mechanic.Data;
+using Mechanic.Domain.Entities;
 
 namespace Mechanic.Infrastructure.Repositories
 {

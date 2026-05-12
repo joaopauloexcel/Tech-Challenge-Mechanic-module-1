@@ -94,7 +94,7 @@ namespace Mechanic.Infrastructure.Data.Migrations
                 {
                     table.PrimaryKey("PK_OrdemServicoProdutos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OrdemServicoProdutos_OrdemServicoOrcamentos_OSOrcamentoId",
+                        name: "FK_OrdemServicoProdutos_OrdemServicoOrcamentos_OrcamentoId",
                         column: x => x.OSOrcamentoId,
                         principalTable: "OrdemServicoOrcamentos",
                         principalColumn: "Id",
@@ -128,7 +128,7 @@ namespace Mechanic.Infrastructure.Data.Migrations
                 {
                     table.PrimaryKey("PK_OrdemServicoServicos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OrdemServicoServicos_OrdemServicoOrcamentos_OSOrcamentoId",
+                        name: "FK_OrdemServicoServicos_OrdemServicoOrcamentos_OrcamentoId",
                         column: x => x.OSOrcamentoId,
                         principalTable: "OrdemServicoOrcamentos",
                         principalColumn: "Id",
@@ -185,7 +185,7 @@ namespace Mechanic.Infrastructure.Data.Migrations
                 column: "OSId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrdemServicoProdutos_OSOrcamentoId",
+                name: "IX_OrdemServicoProdutos_OrcamentoId",
                 table: "OrdemServicoProdutos",
                 column: "OSOrcamentoId");
 
@@ -210,7 +210,7 @@ namespace Mechanic.Infrastructure.Data.Migrations
                 column: "OSId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrdemServicoServicos_OSOrcamentoId",
+                name: "IX_OrdemServicoServicos_OrcamentoId",
                 table: "OrdemServicoServicos",
                 column: "OSOrcamentoId");
 

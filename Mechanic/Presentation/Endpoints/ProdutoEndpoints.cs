@@ -1,5 +1,8 @@
-﻿using Mechanic.Application.DTOs.Produto;
+﻿using Mechanic.Application.DTOs.Produto.Params;
+using Mechanic.Application.DTOs.Produto.Request;
+using Mechanic.Application.DTOs.Produto.Response;
 using Mechanic.Application.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Mechanic.Presentation.Endpoints;
 
@@ -12,14 +15,15 @@ public static class ProdutoEndpoints
             .RequireAuthorization()
             .WithTags("Produtos");
 
-        group.MapGet("/", async (string? sku, ProdutoService service) =>
+        group.MapGet("/", async ([AsParameters] ProdutoParamsDto dto, [FromKeyedServices] ProdutoService service) =>
         {
-            return Results.Ok(await service.ListarTodos(sku));
+            var produtos = await service.ListarTodos(dto);
+            return Results.Ok(produtos);
         })
         .WithName("ListarProdutos")
         .WithSummary("Lista todos os produtos")
         .WithDescription("Retorna uma lista de produtos. Pode filtrar por SKU.")
-        .Produces<List<ProdutoDto>>(StatusCodes.Status200OK);
+        .Produces<List<ProdutoResponseDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/{id}", async (int id, ProdutoService service) =>
         {
@@ -28,10 +32,10 @@ public static class ProdutoEndpoints
         })
         .WithName("ObterProdutoPorId")
         .WithSummary("Busca um produto por ID")
-        .Produces<ProdutoDto>(StatusCodes.Status200OK)
+        .Produces<ProdutoResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
-        group.MapPost("/", async (AdicionarProdutoDto dto, ProdutoService service) =>
+        group.MapPost("/", async ([FromBody] AdicionarProdutoRequestDto dto, [FromKeyedServices] ProdutoService service) =>
         {
             try
             {
@@ -53,12 +57,12 @@ public static class ProdutoEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict);
 
-        group.MapPut("/{id}", async (int id, AtualizarProdutoDto dto, ProdutoService service) =>
+        group.MapPut("/{id}", async (int id, [FromBody] AtualizarProdutoRequestDto dto, [FromKeyedServices] ProdutoService service) =>
         {
             try
             {
                 var updated = await service.Atualizar(id, dto);
-                return updated ? Results.Ok() : Results.NotFound();
+                return updated ? Results.NoContent() : Results.NotFound();
             }
             catch (Exception ex)
             {
@@ -71,31 +75,31 @@ public static class ProdutoEndpoints
         .WithName("AtualizarProduto")
         .WithSummary("Atualiza um produto")
         .WithDescription("Atualiza os dados de um produto existente.")
-        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status400BadRequest);
 
-        group.MapPatch("/{id}/estoque", async (int id, AtualizarEstoqueProdutoDto dto, ProdutoService service) =>
+        group.MapPatch("/{id}/estoque", async (int id, [FromBody] AtualizarEstoqueProdutoRequestDto dto, [FromKeyedServices] ProdutoService service) =>
         {
             var updated = await service.AtualizarEstoque(id, dto);
-            return updated ? Results.Ok() : Results.NotFound();
+            return updated ? Results.NoContent() : Results.NotFound();
         })
         .WithName("AtualizarEstoqueProduto")
         .WithSummary("Atualiza o estoque de um produto")
         .WithDescription("Atualiza apenas a quantidade de estoque do produto.")
-        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id}", async (int id, ProdutoService service) =>
         {
             var deleted = await service.Deletar(id);
-            return deleted ? Results.Ok() : Results.NotFound();
+            return deleted ? Results.NoContent() : Results.NotFound();
         })
         .WithName("DeletarProduto")
         .WithSummary("Remove um produto")
         .WithDescription("Remove (ou desativa) um produto pelo ID.")
-        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
     }
 }

@@ -1,4 +1,4 @@
-﻿using Mechanic.Application.DTOs.Servico;
+﻿using Mechanic.Application.DTOs.Servico.Request;
 using Mechanic.Application.Services;
 using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
@@ -57,7 +57,7 @@ public class ServicoServiceTests
     [Fact]
     public async Task Criar_DeveLancarExcecao_QuandoSkuExistir()
     {
-        var dto = new AdicionarServicoDto { Sku = "SERV1" };
+        var dto = new AdicionarServicoRequestDto { Sku = "SERV1" };
 
         _repoMock.Setup(r => r.ExisteSkuAsync("SERV1"))
                  .ReturnsAsync(true);
@@ -68,7 +68,7 @@ public class ServicoServiceTests
     [Fact]
     public async Task Criar_DeveAdicionarServico()
     {
-        var dto = new AdicionarServicoDto
+        var dto = new AdicionarServicoRequestDto
         {
             Sku = "SERV1",
             Descricao = "Troca de óleo",
@@ -94,7 +94,7 @@ public class ServicoServiceTests
         _repoMock.Setup(r => r.ListarPorIdAsync(1))
                  .ReturnsAsync((Servico?)null);
 
-        var result = await _service.Atualizar(1, new AtualizarServicoDto());
+        var result = await _service.Atualizar(1, new AtualizarServicoRequestDto());
 
         Assert.False(result);
     }
@@ -109,7 +109,7 @@ public class ServicoServiceTests
             Preco = 50
         };
 
-        var dto = new AtualizarServicoDto
+        var dto = new AtualizarServicoRequestDto
         {
             Descricao = "Novo",
             Preco = 120
@@ -136,7 +136,7 @@ public class ServicoServiceTests
             Preco = 50
         };
 
-        var dto = new AtualizarServicoDto
+        var dto = new AtualizarServicoRequestDto
         {
             Descricao = "Novo",
             Preco = null

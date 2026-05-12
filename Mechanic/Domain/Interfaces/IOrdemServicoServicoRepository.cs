@@ -1,4 +1,6 @@
-﻿namespace Mechanic.Domain.Interfaces
+﻿using Mechanic.Domain.Entities;
+
+namespace Mechanic.Domain.Interfaces
 {
     public interface IOrdemServicoServicoRepository
     {
