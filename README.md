@@ -113,9 +113,6 @@ Todos os nomes de:
 
 seguem essa linguagem, garantindo consistência entre código e domínio.
 
-
----
-
 ---
 
 ## 🎯 Objetivo do Projeto
@@ -271,6 +268,8 @@ dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Coverle
 ```
 dotnet sonarscanner end /d:sonar.login="SEU_TOKEN_SONAR"
 ```
+
+---
 
 ## 📋 Qualidade e Segurança
 
