@@ -8,6 +8,140 @@ Este projeto é uma API REST desenvolvida em .NET para gerenciamento de uma ofic
 - user: admin
 - password: 123456
 
+---
+## 📘 Dicionário de Linguagem Ubíqua
+
+Este documento define os principais termos do domínio utilizados no sistema, garantindo alinhamento entre negócio, código e comunicação.
+
+---
+
+## 🧩 Termos do Sistema
+
+---
+
+### 🔧 Ordem de Serviço (OS)
+
+Representa um atendimento realizado pela oficina para um cliente.
+
+- Possui cliente e veículo associados  
+- Evolui por estados (status)  
+- Pode conter múltiplos orçamentos  
+
+---
+
+### 📊 Status da Ordem de Serviço
+
+| Status           | Descrição                              |
+|------------------|----------------------------------------|
+| Recebida         | OS criada, aguardando diagnóstico      |
+| EmDiagnostico    | Problema sendo analisado               |
+| EmAprovacao      | Aguardando decisão do cliente          |
+| EmExecucao       | Serviços sendo realizados              |
+| Finalizada       | Serviços concluídos                    |
+| Entregue         | Veículo entregue ao cliente            |
+| Cancelada        | OS encerrada sem execução              |
+
+---
+
+### 💰 Orçamento
+
+Proposta de serviços e produtos para execução na OS.
+
+- Pode ser **Pendente**, **Aprovado** ou **Reprovado**  
+- Pode conter múltiplos serviços e produtos  
+
+---
+
+### 📊 Status do Orçamento
+
+| Status    | Descrição                         |
+|-----------|----------------------------------|
+| Pendente  | Aguardando decisão do cliente    |
+| Aprovado  | Autorizado para execução         |
+| Reprovado | Recusado pelo cliente            |
+
+---
+
+### 🛠️ Serviço
+
+Atividade executada na OS (ex: troca de óleo).
+
+- Possui preço praticado no orçamento  
+- Pode ter logs de execução  
+
+---
+
+### 📦 Produto
+
+Item físico utilizado na execução (ex: filtro de óleo).
+
+- Pode ser reservado  
+- Pode ser baixado do estoque após aprovação  
+
+---
+
+### 📋 Item de Produto (na OS)
+
+Representa um produto dentro de um orçamento.
+
+| Status     | Descrição                |
+|------------|--------------------------|
+| Reservado  | Separado no estoque      |
+| Confirmado | Baixado do estoque       |
+| Cancelado  | Reserva desfeita         |
+
+---
+
+### ⏱️ Log de Serviço
+
+Registro de execução de um serviço.
+
+| Ação     | Descrição                         |
+|----------|----------------------------------|
+| Iniciar  | Início da execução               |
+| Pausar   | Interrupção temporária           |
+| Terminar | Finalização do serviço           |
+
+---
+
+### 🔐 Hash Público (PublicToken)
+
+Identificador único da OS para acesso externo.
+
+- Usado pelo cliente  
+- Evita exposição de IDs internos  
+- Permite consulta pública da OS  
+
+---
+
+## 🎯 Regras de Negócio Importantes
+
+- Uma OS só pode iniciar diagnóstico se estiver **Recebida**  
+- Um orçamento só pode ser decidido se estiver **Pendente**  
+- A OS só pode ser finalizada se:
+  - Não houver orçamento pendente  
+  - Todos os serviços estiverem finalizados  
+- Produtos só são baixados do estoque após aprovação  
+- O cliente interage via **hash público**, nunca via ID  
+
+---
+
+## 🧠 Observação
+
+Todos os nomes de:
+
+- Entidades  
+- DTOs  
+- Endpoints  
+- Testes  
+
+seguem essa linguagem, garantindo consistência entre código e domínio.
+
+
+---
+
+---
+
 ## 🎯 Objetivo do Projeto
 
 O sistema tem como objetivo gerenciar todo o fluxo de uma oficina mecânica, incluindo:
