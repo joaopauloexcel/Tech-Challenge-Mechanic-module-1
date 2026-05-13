@@ -13,13 +13,9 @@ Este projeto é uma API REST desenvolvida em .NET para gerenciamento de uma ofic
 
 Este documento define os principais termos do domínio utilizados no sistema, garantindo alinhamento entre negócio, código e comunicação.
 
----
+### Termos do Sistema
 
-## 🧩 Termos do Sistema
-
----
-
-### 🔧 Ordem de Serviço (OS)
+#### 🔧 Ordem de Serviço (OS)
 
 Representa um atendimento realizado pela oficina para um cliente.
 
@@ -27,9 +23,7 @@ Representa um atendimento realizado pela oficina para um cliente.
 - Evolui por estados (status)  
 - Pode conter múltiplos orçamentos  
 
----
-
-### 📊 Status da Ordem de Serviço
+#### 📊 Status da Ordem de Serviço
 
 | Status           | Descrição                              |
 |------------------|----------------------------------------|
@@ -41,18 +35,14 @@ Representa um atendimento realizado pela oficina para um cliente.
 | Entregue         | Veículo entregue ao cliente            |
 | Cancelada        | OS encerrada sem execução              |
 
----
-
-### 💰 Orçamento
+#### 💰 Orçamento
 
 Proposta de serviços e produtos para execução na OS.
 
 - Pode ser **Pendente**, **Aprovado** ou **Reprovado**  
 - Pode conter múltiplos serviços e produtos  
 
----
-
-### 📊 Status do Orçamento
+#### 📊 Status do Orçamento
 
 | Status    | Descrição                         |
 |-----------|----------------------------------|
@@ -60,27 +50,21 @@ Proposta de serviços e produtos para execução na OS.
 | Aprovado  | Autorizado para execução         |
 | Reprovado | Recusado pelo cliente            |
 
----
-
-### 🛠️ Serviço
+#### 🛠️ Serviço
 
 Atividade executada na OS (ex: troca de óleo).
 
 - Possui preço praticado no orçamento  
 - Pode ter logs de execução  
 
----
-
-### 📦 Produto
+#### 📦 Produto
 
 Item físico utilizado na execução (ex: filtro de óleo).
 
 - Pode ser reservado  
 - Pode ser baixado do estoque após aprovação  
 
----
-
-### 📋 Item de Produto (na OS)
+#### 📋 Item de Produto (na OS)
 
 Representa um produto dentro de um orçamento.
 
@@ -90,9 +74,7 @@ Representa um produto dentro de um orçamento.
 | Confirmado | Baixado do estoque       |
 | Cancelado  | Reserva desfeita         |
 
----
-
-### ⏱️ Log de Serviço
+#### ⏱️ Log de Serviço
 
 Registro de execução de um serviço.
 
@@ -102,9 +84,7 @@ Registro de execução de um serviço.
 | Pausar   | Interrupção temporária           |
 | Terminar | Finalização do serviço           |
 
----
-
-### 🔐 Hash Público (PublicToken)
+#### 🔐 Hash Público (PublicToken)
 
 Identificador único da OS para acesso externo.
 
@@ -112,9 +92,7 @@ Identificador único da OS para acesso externo.
 - Evita exposição de IDs internos  
 - Permite consulta pública da OS  
 
----
-
-## 🎯 Regras de Negócio Importantes
+#### 🎯 Regras de Negócio Importantes
 
 - Uma OS só pode iniciar diagnóstico se estiver **Recebida**  
 - Um orçamento só pode ser decidido se estiver **Pendente**  
@@ -124,9 +102,7 @@ Identificador único da OS para acesso externo.
 - Produtos só são baixados do estoque após aprovação  
 - O cliente interage via **hash público**, nunca via ID  
 
----
-
-## 🧠 Observação
+#### 🧠 Observação
 
 Todos os nomes de:
 
