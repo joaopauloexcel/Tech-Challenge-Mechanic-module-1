@@ -3,6 +3,10 @@
 Este projeto é uma API REST desenvolvida em .NET para gerenciamento de uma oficina mecânica, com foco em boas práticas de arquitetura de software, separação de responsabilidades e escalabilidade.
 
 ---
+## 🎯 Usuário root API Auth:
+
+- user: admin
+- password: 123456
 
 ## 🎯 Objetivo do Projeto
 

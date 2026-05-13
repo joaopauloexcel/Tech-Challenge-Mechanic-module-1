@@ -78,27 +78,33 @@ builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(options =>
+builder.Services.AddSwaggerGen(c =>
 {
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    c.SupportNonNullableReferenceTypes();
+    c.UseAllOfToExtendReferenceSchemas();
+    c.DescribeAllParametersInCamelCase();
+
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "API",
+        Version = "v1"
+    });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Description = "Digite: Bearer {seu token}",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT"
     });
 
-    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-    {
+    c.AddSecurityRequirement(document =>
+        new OpenApiSecurityRequirement
         {
-            new OpenApiSecuritySchemeReference("Bearer"),
-            new List<string>()
-        }
-    });
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+        });
 });
-
 
 var app = builder.Build();
 
@@ -116,7 +122,7 @@ app.UseHttpsRedirection();
 
 app.MapClienteEndpoints();
 app.MapVeiculoEndpoints();
-app.MapServicoEndpoints(); 
+app.MapServicoEndpoints();
 app.MapProdutoEndpoints();
 app.MapOrdemServicoEndpoints();
 app.MapOrdemServicoExternoEndpoints();
