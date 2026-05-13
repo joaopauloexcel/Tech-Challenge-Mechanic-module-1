@@ -295,6 +295,29 @@ dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Coverle
 ```
 dotnet sonarscanner end /d:sonar.login="SEU_TOKEN_SONAR"
 ```
+
+## 📋 Qualidade e Segurança
+
+### Testes unitários
+
+```
+dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/coverage.xml
+reportgenerator -reports:"coverage/coverage.xml" -targetdir:"coveragereport"
+```
+
+<img width="1657" height="581" alt="Captura de tela 2026-05-13 014954" src="https://github.com/user-attachments/assets/0073012c-3000-49a3-88e8-e935f148c5a5" />
+<img width="1636" height="915" alt="Captura de tela 2026-05-13 015023" src="https://github.com/user-attachments/assets/92da0c41-77fb-4182-9a93-8dd6064c04e6" />
+
+###  Scanning OWASP ZAP
+
+```
+dotnet run
+docker run -t -v ${PWD}:/zap/wrk ghcr.io/zaproxy/zaproxy zap-full-scan.py -t http://host.docker.internal:5195 -r report.html
+```
+
+<img width="1139" height="854" alt="image" src="https://github.com/user-attachments/assets/99b70834-9ac0-410c-bb08-86aeeec45c2f" />
+<img width="1138" height="905" alt="image" src="https://github.com/user-attachments/assets/66cf9177-4b3f-4b8b-8865-8bf0e37ed4cf" />
+
 ___
 
 
