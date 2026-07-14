@@ -26,4 +26,8 @@
     <Folder Include="Infrastructure\Data\Migrations\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include=".github\workflows\pipeline.yml" />
+  </ItemGroup>
+
 </Project>

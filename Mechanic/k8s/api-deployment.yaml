@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mechanic-api
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mechanic-api
+  template:
+    metadata:
+      labels:
+        app: mechanic-api
+    spec:
+      containers:
+        - name: mechanic-api
+          image: mechanic-api:latest
+          imagePullPolicy: Never
+
+          ports:
+            - containerPort: 8080
+
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: mechanic-config
+                  key: environment
+
+            - name: ConnectionStrings__AppDbContext
+              valueFrom:
+                secretKeyRef:
+                  name: mechanic-secret
+                  key: connectionString
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mechanic-config
+  namespace: default
+data:
+  environment: Development
