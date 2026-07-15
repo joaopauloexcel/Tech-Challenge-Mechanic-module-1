@@ -54,4 +54,4 @@ jobs:
         run: |
           terraform init
           terraform apply -var="is_local=false" -auto-approve
-        working-directory: ./terraform
+        working-directory: ./Mechanic/terraform
