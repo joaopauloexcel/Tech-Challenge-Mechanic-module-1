@@ -20,6 +20,6 @@ provider "kubernetes" {
 
   # Modo Nuvem (AWS EKS)
   host                   = var.is_local ? null : data.aws_eks_cluster.cluster[0].endpoint
-  cluster_ca_certificate = var.is_local ? null : base64decode(data.aws_eks_cluster.cluster[0].certificate_authority.data)
+  cluster_ca_certificate = var.is_local ? null : base64decode(data.aws_eks_cluster.cluster[0].certificate_authority[0].data)
   token                  = var.is_local ? null : data.aws_eks_cluster_auth.cluster[0].token
 }
