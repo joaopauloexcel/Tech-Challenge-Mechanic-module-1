@@ -51,7 +51,15 @@ jobs:
         with:
           terraform_version: 1.7.0
       - name: Executar Terraform Apply (Deploy AWS)
-        run: |
+        run: >
           terraform init
+
+          # Etapa A: Cria primeiro a rede e o cluster EKS, ignorando os manifestos por enquanto
+
+          terraform apply -target=module.vpc -target=module.eks -var="is_local=false" -auto-approve
+
+
+          # Etapa B: Com o cluster pronto na nuvem, aplica todo o resto (YAMLs, Banco, API)
+
           terraform apply -var="is_local=false" -auto-approve
         working-directory: ./Mechanic/terraform
