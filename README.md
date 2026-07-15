@@ -239,7 +239,8 @@ dotnet tool install --global dotnet-sonarscanner
 - Caso execute localmente, inicie a aplicação do SonarQube com docker:
 
 ```
-docker run -d --name sonarqube -p 9000:9000 sonarqube:lts
+
+run -d --name sonarqube -p 9000:9000 sonarqube:lts
 ```
 
 - Em seguida, acesse: http://localhost:9000 (Geralmente, o login é default "admin/admin")

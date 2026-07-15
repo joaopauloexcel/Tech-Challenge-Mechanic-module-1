@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Itens de Solução", "Itens de Solução", "{1963CA27-A311-424C-B699-4761EC9588F5}"
 	ProjectSection(SolutionItems) = preProject
 		..\.gitignore = ..\.gitignore
+		..\.github\workflows\ci-cd.yml = ..\.github\workflows\ci-cd.yml
 		README.md = README.md
 		..\README.md = ..\README.md
 	EndProjectSection
