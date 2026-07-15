@@ -8,3 +8,4 @@ variable "kubeconfig_path" {
   type        = string
   description = "Caminho do arquivo kubeconfig para o ambiente local"
   default     = "~/.kube/config"
+}
