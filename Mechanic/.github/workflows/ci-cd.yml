@@ -1,0 +1,73 @@
+name: CI/CD Pipeline - Tech Challenge Mechanic
+
+on:
+  push:
+    branches: [ "main" ] # Dispara a pipeline sempre que você der 'git push' na main
+
+jobs:
+  build-and-test:
+    name: 1. Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v4
+
+    # Configuração do ambiente de build (.NET, Node, Java, etc. Altere se necessário)
+    - name: Configurar ambiente .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0'
+
+    - name: Restaurar dependências
+      run: dotnet restore
+
+    - name: Executar o Build da aplicação
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Executar os testes automatizados
+      run: dotnet test --no-build --verbosity normal
+
+  docker-and-deploy:
+    name: 2. Docker Build & Terraform Deploy
+    needs: build-and-test # Só roda esta parte se os testes passarem
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v4
+
+    # Autenticação no Docker Hub para enviar a imagem da sua API
+    - name: Fazer Login no Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build da imagem Docker e Push
+      uses: docker/build-push-action@v5
+      with:
+        context: . # Caminho da raiz onde está o seu Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/mechanic-api:latest
+
+    # Autenticação na AWS usando as chaves secretas que salvamos no GitHub
+    - name: Configurar credenciais da AWS
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    # Configura o ambiente do servidor do GitHub para rodar comandos do Terraform
+    - name: Configurar o Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.7.0"
+
+    # Inicializa os provedores e força o deploy na nuvem usando a variável is_local=false
+    - name: Executar Terraform Apply (Deploy AWS)
+      run: |
+        terraform init
+        terraform apply -var="is_local=false" -auto-approve
+      working-directory: ./terraform # Ajuste se o nome da sua pasta for diferente
