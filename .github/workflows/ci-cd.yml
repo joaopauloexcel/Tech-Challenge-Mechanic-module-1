@@ -8,9 +8,6 @@ jobs:
   build-and-test:
     name: 1. Build & Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./Mechanic
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -19,11 +16,11 @@ jobs:
         with:
           dotnet-version: "10.0"
       - name: Restaurar dependências
-        run: dotnet restore
+        run: dotnet restore ./Mechanic/Mechanic.sln
       - name: Executar o Build da aplicação
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build ./Mechanic/Mechanic.sln --no-restore --configuration Release
       - name: Executar os testes automatizados
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test ./Mechanic.Tests/Mechanic.Tests.csproj --configuration Release
   docker-and-deploy:
     name: 2. Docker Build & Terraform Deploy
     needs: build-and-test
@@ -39,7 +36,8 @@ jobs:
       - name: Build da imagem Docker e Push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./Mechanic
+          file: ./Mechanic/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/mechanic-api:latest
       - name: Configurar credenciais da AWS
