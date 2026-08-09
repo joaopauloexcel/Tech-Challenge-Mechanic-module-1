@@ -45,5 +45,30 @@ public static class OrdemServicoExternoEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
 
+        group.MapPatch("/externo/{hash}/{docFinal}/cancelar", async (
+             string hash,
+             string docFinal,
+             [FromKeyedServices] OrdemServicoService service) =>
+                {
+                    try
+                    {
+                        await service.CancelarOrdemServicoPorHashExternoAsync(hash, docFinal);
+                        return Results.NoContent();
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return Results.BadRequest(ex.Message);
+                    }
+                    catch (Exception)
+                    {
+                        return Results.NotFound();
+                    }
+                })
+         .WithName("CancelarOSExterno")
+         .WithSummary("Cancela uma OS via acesso externo (simulação email/webhook)")
+         .Produces(StatusCodes.Status204NoContent)
+         .Produces(StatusCodes.Status400BadRequest)
+         .Produces(StatusCodes.Status404NotFound);
+
     }
 }

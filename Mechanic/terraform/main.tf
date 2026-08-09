@@ -5,14 +5,25 @@ resource "kubernetes_manifest" "configmap" {
 resource "kubernetes_manifest" "secret" {
   manifest = yamldecode(file("${path.module}/../k8s/secret.yaml"))
 
-  computed_fields = ["metadata.labels", "metadata.annotations", "stringData"]
+  computed_fields = [
+    "metadata.labels",
+    "metadata.annotations",
+    "stringData"
+  ]
 }
 
+# 🔹 PVC precisa vir antes do banco
+resource "kubernetes_manifest" "pvc" {
+  manifest = yamldecode(file("${path.module}/../k8s/pvc.yaml"))
+}
+
+# 🔹 Banco depende do secret e do PVC
 resource "kubernetes_manifest" "db_deployment" {
   manifest = yamldecode(file("${path.module}/../k8s/db-deployment.yaml"))
 
   depends_on = [
-    kubernetes_manifest.secret
+    kubernetes_manifest.secret,
+    kubernetes_manifest.pvc
   ]
 }
 
@@ -24,6 +35,7 @@ resource "kubernetes_manifest" "db_service" {
   ]
 }
 
+# 🔹 API depende de tudo que ela usa
 resource "kubernetes_manifest" "api_deployment" {
   manifest = yamldecode(file("${path.module}/../k8s/api-deployment.yaml"))
 
@@ -42,6 +54,7 @@ resource "kubernetes_manifest" "api_service" {
   ]
 }
 
+# 🔹 HPA sempre por último
 resource "kubernetes_manifest" "hpa" {
   manifest = yamldecode(file("${path.module}/../k8s/hpa.yaml"))
 

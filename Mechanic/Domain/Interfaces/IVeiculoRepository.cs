@@ -11,5 +11,6 @@ namespace Mechanic.Domain.Interfaces
         Task ExcluirAsync(int id);
         Task<bool> ExistePlacaAsync(string placa);
         Task<bool> ClienteExisteAsync(int clienteId);
+        Task<bool> VeiculoExisteAsync(int veiculoId);
     }
 }

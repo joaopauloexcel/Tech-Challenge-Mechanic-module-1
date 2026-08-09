@@ -59,5 +59,9 @@ namespace Mechanic.Infrastructure.Repositories
             return await _context.Clientes
                 .AnyAsync(c => c.CpfCnpj.Value == normalized);
         }
+        public async Task<bool> ClienteExisteAsync(int clienteId)
+        {
+            return await _context.Clientes.AnyAsync(c => c.Id == clienteId);
+        }
     }
 }

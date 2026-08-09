@@ -3,20 +3,24 @@ kind: Deployment
 metadata:
   name: mechanic-api
   namespace: default
+
 spec:
   replicas: 1
+
   selector:
     matchLabels:
       app: mechanic-api
+
   template:
     metadata:
       labels:
         app: mechanic-api
+
     spec:
       containers:
         - name: mechanic-api
-          image: mechanic-api:latest
-          imagePullPolicy: Never
+          image: jpsistemas/mechanic-api:latest
+          imagePullPolicy: Always
 
           ports:
             - containerPort: 8080

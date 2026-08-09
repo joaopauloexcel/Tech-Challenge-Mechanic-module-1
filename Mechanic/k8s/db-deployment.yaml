@@ -3,15 +3,19 @@ kind: Deployment
 metadata:
   name: mechanic-db
   namespace: default
+
 spec:
   replicas: 1
+
   selector:
     matchLabels:
       app: mechanic-db
+
   template:
     metadata:
       labels:
         app: mechanic-db
+
     spec:
       containers:
         - name: sqlserver
@@ -25,7 +29,10 @@ spec:
               value: "Y"
 
             - name: SA_PASSWORD
-              value: "YourStrong!Passw0rd"
+              valueFrom:
+                secretKeyRef:
+                  name: mechanic-secret
+                  key: dbPassword
 
           volumeMounts:
             - name: sql-data
@@ -33,4 +40,5 @@ spec:
 
       volumes:
         - name: sql-data
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: sql-pvc

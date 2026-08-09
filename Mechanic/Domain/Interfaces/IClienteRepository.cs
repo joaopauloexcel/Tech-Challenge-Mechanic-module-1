@@ -10,5 +10,6 @@ namespace Mechanic.Domain.Interfaces
         Task AtualizarAsync(Cliente cliente);
         Task ExcluirAsync(int id);
         Task<bool> ExisteCpfCnpjAsync(string cpfCnpj);
+        Task<bool> ClienteExisteAsync(int clienteId);
     }
 }

@@ -60,5 +60,10 @@ namespace Mechanic.Infrastructure.Repositories
         {
             return await _context.Clientes.AnyAsync(c => c.Id == clienteId);
         }
+
+        public async Task<bool> VeiculoExisteAsync(int veiculoId)
+        {
+            return await _context.Veiculos.AnyAsync(v => v.Id == veiculoId);
+        }
     }
 }

@@ -5,6 +5,7 @@ using Mechanic.Infrastructure.Repositories;
 using Mechanic.Presentation.Endpoints;
 using Mechanic.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -73,7 +74,7 @@ builder.Services.AddScoped<OrdemServicoService>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-
+builder.Services.AddScoped<ValidacaoAcessoExternoService>();
 builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -108,11 +109,36 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+if (app.Environment.IsDevelopment()){
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseExceptionHandler(appError =>
+{
+    appError.Run(async context =>
+    {
+        var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+
+        context.Response.ContentType = "application/json";
+
+        if (exception is InvalidOperationException)
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsJsonAsync(new
+            {
+                mensagem = exception.Message
+            });
+            return;
+        }
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsJsonAsync(new
+        {
+            mensagem = "Erro interno"
+        });
+    });
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

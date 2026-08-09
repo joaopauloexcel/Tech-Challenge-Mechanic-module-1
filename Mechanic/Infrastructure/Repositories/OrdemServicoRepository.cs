@@ -5,6 +5,7 @@ using Mechanic.Data;
 using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Mechanic.Application.Extensions;
 
 namespace Mechanic.Infrastructure.Repositories
 {
@@ -48,6 +49,17 @@ namespace Mechanic.Infrastructure.Repositories
 
             if (!string.IsNullOrWhiteSpace(dto.Placa))
                 query = query.Where(x => x.Veiculo.Placa == dto.Placa);
+
+            if (dto.IncluirFinalizadasEEntregues != true)
+            {
+                query = query.Where(x =>
+                    x.Status != StatusOrdemServico.Finalizada &&
+                    x.Status != StatusOrdemServico.Entregue);
+            }
+
+            query = query
+            .OrderBy(OrdemServicoExtensions.OrdenacaoStatusExpr)
+            .ThenBy(x => x.DataCriacao);
 
             return await query.ToListAsync();
         }

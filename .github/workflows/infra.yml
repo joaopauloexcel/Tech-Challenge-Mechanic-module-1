@@ -1,0 +1,26 @@
+name: Infra (Local - Terraform)
+
+on:
+  workflow_dispatch: # só roda manualmente
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: ./Mechanic/terraform
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: ./Mechanic/terraform
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: ./Mechanic/terraform
+        run: terraform plan -var="is_local=true"

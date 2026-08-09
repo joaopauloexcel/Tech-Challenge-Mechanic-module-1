@@ -380,6 +380,35 @@ public class OrdemServicoEndpointsTests : IClassFixture<ApiTestBase>
     }
 
     [Fact]
+    public async Task Cliente_Deve_Conseguir_Cancelar_OS_Se_Ainda_Nao_Aprovada()
+    {
+        // Arrange
+        var osId = await CriarOSAsync();
+        await AvancarParaDiagnosticoAsync(osId);
+        await EnviarOrcamentoAsync(osId);
+
+        var osResponse = await _client.GetAsync($"/api/ordens-servico/{osId}");
+        var dto = await osResponse.Content.ReadFromJsonAsync<OrdemServicoResponseDto>();
+
+        Assert.NotNull(dto);
+
+        var ultimosDigitos = dto.CpfCnpjCliente[^3..];
+
+        // Act - chama endpoint de cancelamento externo
+        var response = await _client.PatchAsync(
+            $"/api/ordem-servico/externo/{dto.PublicToken}/{ultimosDigitos}/cancelar",
+            null);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        var osAtualizadaResponse = await _client.GetAsync($"/api/ordens-servico/{osId}");
+        var osAtualizada = await osAtualizadaResponse.Content.ReadFromJsonAsync<OrdemServicoResponseDto>();
+        Assert.NotNull(osAtualizada);
+        Assert.Equal(StatusOrdemServico.Cancelada.ToString(), osAtualizada.StatusOS);
+    }
+
+    [Fact]
     public async Task Aprovar_Orcamento_Deve_Mudar_Para_Em_Execucao()
     {
         var osId = await CriarOSEmExecucaoAsync();

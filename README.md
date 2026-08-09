@@ -3,12 +3,289 @@
 Este projeto é uma API REST desenvolvida em .NET para gerenciamento de uma oficina mecânica, com foco em boas práticas de arquitetura de software, separação de responsabilidades e escalabilidade.
 
 ---
-## 🎯 Usuário root API Auth:
 
-- user: admin
-- password: 123456
+## 🎯 Usuário root API Auth
+
+* **User:** admin
+* **Password:** 123456
 
 ---
+
+# 🚀 Tech Challenge - Mechanic API
+
+Projeto desenvolvido como parte do Tech Challenge, com foco em boas práticas de engenharia de software, DevOps e arquitetura moderna.
+
+---
+
+## 🧱 Arquitetura do Projeto
+
+O sistema foi estruturado com os seguintes pilares:
+
+* **Containerização:** Docker
+* **Orquestração:** Kubernetes (Minikube - ambiente local)
+* **Infraestrutura como Código:** Terraform (Kubernetes Provider)
+* **CI/CD:** GitHub Actions
+
+> ⚠️ Optou-se por utilizar **cluster local (Minikube)** para evitar custos com cloud (AWS), mantendo a mesma arquitetura que seria usada em ambientes produtivos como EKS.
+
+---
+
+## 🐳 Containerização
+
+A aplicação está totalmente containerizada utilizando Docker.
+
+### ✔️ Dockerfile
+
+Responsável por build e execução da API .NET.
+
+### ✔️ docker-compose
+
+Utilizado para desenvolvimento local com:
+
+* API
+* SQL Server
+
+Executar:
+
+```bash
+docker-compose up --build
+```
+
+---
+
+## ☸️ Kubernetes (Minikube)
+
+Os manifestos Kubernetes estão na pasta:
+
+```
+/Mechanic/k8s
+```
+
+### Recursos criados:
+
+* **Deployment**
+
+  * API (`mechanic-api`)
+  * Banco (`mechanic-db`)
+
+* **Services**
+
+  * API (NodePort)
+  * Banco (ClusterIP)
+
+* **ConfigMap**
+
+  * Variáveis de ambiente
+
+* **Secret**
+
+  * Connection string
+
+* **Persistent Volume Claim (PVC)**
+
+  * Persistência de dados do banco
+
+* **HPA (Horizontal Pod Autoscaler)**
+
+  * Escala automática baseada em CPU e memória
+
+---
+
+## ⚙️ HPA (Escalabilidade)
+
+O autoscaling da API é feito utilizando o Horizontal Pod Autoscaler.
+
+### Requisitos para funcionamento:
+
+No Minikube, é necessário habilitar o **metrics-server**:
+
+```bash
+minikube addons enable metrics-server
+```
+
+### Verificar funcionamento:
+
+```bash
+kubectl get hpa
+```
+
+---
+
+## 🏗️ Infraestrutura como Código (Terraform)
+
+Terraform é utilizado para gerenciar os recursos Kubernetes localmente.
+
+📁 Localização:
+
+```
+/Mechanic/terraform
+```
+
+### Funcionalidades:
+
+* Criação dos recursos Kubernetes via `kubernetes_manifest`
+* Gerenciamento de:
+
+  * Deployments
+  * Services
+  * ConfigMap
+  * Secret
+  * PVC
+  * HPA
+* Organização declarativa da infraestrutura
+* Reprodutibilidade do ambiente
+
+---
+
+## ▶️ Execução Local Completa
+
+Siga os passos abaixo para rodar toda a aplicação com Kubernetes local:
+
+---
+
+### 📌 Pré-requisitos
+
+* Docker instalado
+* Minikube instalado
+* Kubectl instalado
+* Terraform instalado
+
+---
+
+### 🚀 1. Iniciar o cluster Kubernetes
+
+```bash
+minikube start
+```
+
+---
+
+### ⚙️ 2. Habilitar métricas (necessário para HPA)
+
+```bash
+minikube addons enable metrics-server
+```
+
+---
+
+### 🏗️ 3. Provisionar infraestrutura com Terraform
+
+```bash
+cd Mechanic/terraform
+
+terraform init
+terraform apply -var="is_local=true"
+```
+
+---
+
+### 🌐 4. Acessar a aplicação
+
+```bash
+minikube service mechanic-api-service
+```
+
+---
+
+### 🛑 Parar o ambiente
+
+```bash
+minikube stop
+```
+
+---
+
+### 🧹 Destruir recursos
+
+```bash
+terraform destroy -var="is_local=true"
+```
+
+---
+
+## 🔄 CI/CD (GitHub Actions)
+
+O pipeline foi dividido em 3 etapas:
+
+---
+
+### 🧪 1. CI (Build e Testes)
+
+Arquivo: `ci.yaml`
+
+Executa automaticamente a cada push na branch `main`.
+
+Etapas:
+
+* Restore do projeto
+* Build da aplicação
+* Execução dos testes automatizados
+
+---
+
+### 📦 2. Deploy (Simulado)
+
+Arquivo: `deploy.yaml`
+
+Executa após o CI.
+
+Etapas:
+
+* Build da imagem Docker
+* Push para Docker Hub
+* Simulação de deploy Kubernetes
+
+```bash
+kubectl apply -f ./Mechanic/k8s/
+```
+
+> ⚠️ Deploy real não é executado para evitar custos com cloud.
+
+---
+
+### 🏗️ 3. Infra (Terraform Local)
+
+Arquivo: `infra.yaml`
+
+Executado manualmente (`workflow_dispatch`).
+
+Etapas:
+
+* Terraform init
+* Terraform validate
+* Terraform plan
+
+---
+
+## 💰 Sobre custos (AWS)
+
+Este projeto foi adaptado para rodar **100% local**, evitando:
+
+* Custos com EKS
+* NAT Gateway (principal fonte de cobrança 💸)
+* EC2
+* Load Balancer
+
+A arquitetura permanece compatível com cloud, podendo ser migrada futuramente.
+
+---
+
+## 📌 Conclusão
+
+O projeto atende aos requisitos do Tech Challenge:
+
+✅ Containerização com Docker
+✅ Orquestração com Kubernetes
+✅ Infraestrutura como código com Terraform
+✅ Pipeline CI/CD funcional
+✅ Banco com persistência (PVC)
+✅ Escalabilidade com HPA
+✅ Arquitetura pronta para cloud (sem custos atuais)
+
+
+---
+# Fase 1
+
 ## 📘 Dicionário de Linguagem Ubíqua
 
 Este documento define os principais termos do domínio utilizados no sistema, garantindo alinhamento entre negócio, código e comunicação.

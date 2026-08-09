@@ -16,6 +16,9 @@ namespace Mechanic.Application.Services
         private readonly IOrdemServicoServicoRepository _osServRepo; 
         private readonly IUnitOfWork _uow;
         private readonly IOrdemServicoServicoLogRepository _osLogRepo;
+        private readonly IVeiculoRepository _veiculoRepo;
+        private readonly IClienteRepository _clienteRepo;
+        private readonly ValidacaoAcessoExternoService _validacaoAcessoExterno;
 
         public OrdemServicoService(
             IOrdemServicoRepository osRepo,
@@ -24,7 +27,10 @@ namespace Mechanic.Application.Services
             IOrdemServicoProdutoRepository osProdRepo,
             IOrdemServicoServicoRepository osServRepo,
             IOrdemServicoServicoLogRepository osLogRepo,
-            IUnitOfWork uow)
+            IUnitOfWork uow,
+            IVeiculoRepository veiculoRepo,
+            IClienteRepository clienteRepo,
+        ValidacaoAcessoExternoService validacaoAcessoExterno)
         {
             _osRepo = osRepo;
             _produtoRepo = produtoRepo;
@@ -33,6 +39,9 @@ namespace Mechanic.Application.Services
             _osServRepo = osServRepo;
             _osLogRepo = osLogRepo;
             _uow = uow;
+            _validacaoAcessoExterno = validacaoAcessoExterno;
+            _veiculoRepo = veiculoRepo;
+            _clienteRepo = clienteRepo;
         }
 
         private OrdemServicoResponseDto MapToDto(OrdemServico os)
@@ -114,17 +123,22 @@ namespace Mechanic.Application.Services
 
         public async Task<int> AdicionarOSAsync(CriarOrdemServicoRequestDto dto)
         {
-            var os = new OrdemServico
-            {
-                Titulo = dto.Titulo,
-                Descricao = dto.Descricao,
-                ClienteId = dto.ClienteId,
-                VeiculoId = dto.VeiculoId,
-                Status = StatusOrdemServico.Recebida,
-                DataCriacao = DateTime.UtcNow,
+            var veiculoExiste = await _veiculoRepo.VeiculoExisteAsync(dto.VeiculoId);
 
-                PublicHash = Guid.NewGuid().ToString("N")
-            };
+            if (!veiculoExiste)
+                throw new InvalidOperationException("Veículo informado não existe.");
+
+            var clienteExiste = await _clienteRepo.ClienteExisteAsync(dto.ClienteId);
+
+            if (!clienteExiste)
+                throw new InvalidOperationException("Cliente informado não existe.");
+
+            var os = OrdemServico.Criar(
+                dto.Titulo,
+                dto.Descricao,
+                dto.ClienteId,
+                dto.VeiculoId
+            );
 
             await _osRepo.AdicionarAsync(os);
             await _osRepo.SalvarAsync();
@@ -146,17 +160,6 @@ namespace Mechanic.Application.Services
             return os is null ? null : MapToDto(os);
         }
 
-        private static bool SafeEquals(string a, string b)
-        {
-            if (a.Length != b.Length) return false;
-
-            var result = 0;
-            for (int i = 0; i < a.Length; i++)
-                result |= a[i] ^ b[i];
-
-            return result == 0;
-        }
-
         public async Task<OrdemServicoResponseDto?> ListarPorHashExternoAsync(string hashExterno, string docFinal)
         {
             if (string.IsNullOrWhiteSpace(docFinal) || docFinal.Length != 3)
@@ -167,18 +170,14 @@ namespace Mechanic.Application.Services
             if (os is null)
                 return null;
 
-            var documento = os.Cliente.CpfCnpj.Value;
+            var documento = os.Cliente?.CpfCnpj?.Value;
 
-            if (string.IsNullOrEmpty(documento) || documento.Length < 3)
-                return null;
-
-            var ultimosDigitos = documento[^3..];
-
-            if (ultimosDigitos != docFinal)
-                return null;
-
-            if (!SafeEquals(ultimosDigitos, docFinal))
-                return null;
+            if (!_validacaoAcessoExterno.ValidarDocumentoFinal(
+                    documento!,
+                    docFinal))
+            {
+                throw new Exception("OS não encontrada.");
+            }
 
             return MapToDto(os);
         }
@@ -190,11 +189,7 @@ namespace Mechanic.Application.Services
             if (os is null)
                 throw new Exception("Ordem de Serviço não encontrada.");
 
-            if (os.Status != StatusOrdemServico.Recebida)
-                throw new Exception("A OS só pode iniciar diagnóstico se estiver como Recebida.");
-
-            os.Status = StatusOrdemServico.EmDiagnostico;
-            os.DataInicioDiagnostico = DateTime.UtcNow;
+            os.IniciarDiagnostico();
 
             await _osRepo.AtualizarAsync(os);
             await _osRepo.SalvarAsync();
@@ -230,11 +225,7 @@ namespace Mechanic.Application.Services
                 os.Orcamentos ??= new List<OrdemServicoOrcamento>();
                 os.Orcamentos.Add(orcamento);
 
-                if (os.Status == StatusOrdemServico.EmDiagnostico)
-                {
-                    os.Status = StatusOrdemServico.EmAprovacao;
-                    os.DataFimDiagnostico = DateTime.UtcNow;
-                }
+                os.EnviarOrcamento();
 
                 foreach (var prod in dto.ProdutosOrcamentoOS)
                 {
@@ -316,13 +307,12 @@ namespace Mechanic.Application.Services
 
                 var documento = os.Cliente?.CpfCnpj?.Value;
 
-                if (string.IsNullOrEmpty(documento) || documento.Length < 3)
-                    throw new Exception("OS ou Orçamento não encontrado.");
-
-                var ultimosDigitos = documento[^3..];
-
-                if (!SafeEquals(ultimosDigitos, docFinal))
-                    throw new Exception("OS ou Orçamento não encontrado.");
+                if (!_validacaoAcessoExterno.ValidarDocumentoFinal(
+                        documento!,
+                        docFinal))
+                {
+                    throw new Exception("OS não encontrada.");
+                }
 
                 var orcamento = await _orcRepo.ObterPorIdAsync(orcamentoId);
 
@@ -339,11 +329,7 @@ namespace Mechanic.Application.Services
                     orcamento.StatusOrcamento = StatusOrcamento.Aprovado;
                     orcamento.DataAprovacaoOrcamento = DateTime.UtcNow;
 
-                    if (os.Status == StatusOrdemServico.EmAprovacao)
-                    {
-                        os.Status = StatusOrdemServico.EmExecucao;
-                        os.DataInicioExecucao = DateTime.UtcNow;
-                    }
+                    os.ExecutarOS();
 
                     foreach (var itemOS in produtosDoOrcamento)
                     {
@@ -382,6 +368,47 @@ namespace Mechanic.Application.Services
                 }
 
                 await _orcRepo.AtualizarAsync(orcamento);
+                await _osRepo.AtualizarAsync(os);
+
+                await _uow.CommitAsync();
+            }
+            catch
+            {
+                await _uow.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task CancelarOrdemServicoPorHashExternoAsync(
+            string hashExterno,
+            string docFinal)
+        {
+            await _uow.BeginTransactionAsync();
+
+            try
+            {
+                // 🔹 sanitiza doc
+                docFinal = new string(docFinal.Where(char.IsDigit).ToArray());
+
+                if (docFinal.Length != 3)
+                    throw new Exception("OS não encontrada.");
+
+                var os = await _osRepo.ObterPorComHashAsync(hashExterno);
+
+                if (os is null)
+                    throw new Exception("OS não encontrada.");
+
+                var documento = os.Cliente?.CpfCnpj?.Value;
+
+                if (!_validacaoAcessoExterno.ValidarDocumentoFinal(
+                        documento!,
+                        docFinal))
+                {
+                    throw new Exception("OS não encontrada.");
+                }
+
+                os.Cancelar();
+
                 await _osRepo.AtualizarAsync(os);
 
                 await _uow.CommitAsync();
@@ -458,15 +485,7 @@ namespace Mechanic.Application.Services
             var os = await _osRepo.ObterPorIdAsync(osId)
                 ?? throw new Exception("OS não encontrada");
 
-            if (os.Status is not (
-                StatusOrdemServico.Recebida or
-                StatusOrdemServico.EmDiagnostico or
-                StatusOrdemServico.EmAprovacao))
-                throw new Exception("OS não pode ser cancelada no status atual");
-
-            os.Status = StatusOrdemServico.Cancelada;
-            os.DataCancelamento = DateTime.UtcNow;
-
+            os.Cancelar();
             await _uow.CommitAsync();
         }
 
@@ -475,21 +494,7 @@ namespace Mechanic.Application.Services
             var os = await _osRepo.ObterComServicosAsync(osId)
                 ?? throw new Exception("OS não encontrada");
 
-            if (os.Status != StatusOrdemServico.EmExecucao)
-                throw new Exception("OS só pode ser finalizada em execução");
-
-            if (os.PossuiOrcamentoPendente)
-                throw new Exception("Não é possível finalizar OS com orçamento pendente");
-
-            var todosFinalizados = os.Servicos.All(s =>
-                s.Logs.Any(l => l.AcaoLog == StatusServicoLog.Terminar)
-            );
-
-            if (!todosFinalizados)
-                throw new Exception("Existem serviços não finalizados");
-
-            os.Status = StatusOrdemServico.Finalizada;
-            os.DataFinalizacao = DateTime.UtcNow;
+            os.Finalizar();
 
             await _osRepo.AtualizarAsync(os);
             await _uow.CommitAsync();
@@ -500,11 +505,7 @@ namespace Mechanic.Application.Services
             var os = await _osRepo.ObterPorIdAsync(osId)
                 ?? throw new Exception("OS não encontrada");
 
-            if (os.Status != StatusOrdemServico.Finalizada)
-                throw new Exception("OS só pode ser entregue após finalização");
-
-            os.Status = StatusOrdemServico.Entregue;
-            os.DataEntrega = DateTime.UtcNow;
+            os.Entregar();
 
             await _osRepo.AtualizarAsync(os);
             await _uow.CommitAsync();

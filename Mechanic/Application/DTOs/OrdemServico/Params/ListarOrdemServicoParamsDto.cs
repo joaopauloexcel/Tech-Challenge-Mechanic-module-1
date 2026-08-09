@@ -26,5 +26,10 @@ namespace Mechanic.Application.DTOs.OrdemServico.Params
         /// Placa do veículo para busca
         /// </summary>
         public string? Placa { get; set; }
+
+        /// <summary>
+        /// Trava para retornar OS finalizada ou entregue
+        /// </summary>
+        public bool? IncluirFinalizadasEEntregues { get; set; } = false;
     }
 }

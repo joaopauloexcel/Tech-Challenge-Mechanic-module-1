@@ -43,7 +43,9 @@ public static class OrdemServicoEndpoints
         })
         .WithName("CriarOrdemServico")
         .WithSummary("Cria uma nova ordem de serviço")
-        .Produces<int>(StatusCodes.Status201Created);
+        .Produces<int>(StatusCodes.Status201Created)
+        .Produces<int>(StatusCodes.Status400BadRequest)
+        .Produces<int>(StatusCodes.Status500InternalServerError);
 
         group.MapPost("/{id}/iniciar-diagnostico", async (int id, OrdemServicoService service) =>
         {

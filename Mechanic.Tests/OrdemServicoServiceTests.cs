@@ -1,15 +1,8 @@
-﻿using Mechanic.Application.DTOs.OrdemServico.Params;
-using Mechanic.Application.DTOs.OrdemServico.Request;
-using Mechanic.Application.Enums;
+﻿using Mechanic.Application.Enums;
 using Mechanic.Application.Services;
-using Mechanic.Data;
 using Mechanic.Domain.Entities;
 using Mechanic.Domain.Interfaces;
-using Mechanic.Infrastructure.Repositories;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Moq;
-using System.Net;
 using Xunit;
 
 public class OrdemServicoServiceTests
@@ -21,6 +14,9 @@ public class OrdemServicoServiceTests
     private readonly Mock<IOrdemServicoServicoRepository> _osServRepo = new();
     private readonly Mock<IOrdemServicoServicoLogRepository> _logRepo = new();
     private readonly Mock<IUnitOfWork> _uow = new();
+    private readonly Mock<IVeiculoRepository> _veiculoRepo = new();
+    private readonly Mock<IClienteRepository> _clienteRepo = new();
+    private readonly Mock<ValidacaoAcessoExternoService> _validacaoAcessoExterno = new();
 
     private OrdemServicoService CriarService()
     {
@@ -31,81 +27,87 @@ public class OrdemServicoServiceTests
             _osProdRepo.Object,
             _osServRepo.Object,
             _logRepo.Object,
-            _uow.Object
+            _uow.Object,
+            _veiculoRepo.Object,
+            _clienteRepo.Object,
+            _validacaoAcessoExterno.Object
+
+        );
+    }
+
+    private OrdemServico CriarOSValida()
+    {
+        return OrdemServico.Criar(
+            "Troca de óleo",
+            "Descrição",
+            1,
+            1
         );
     }
 
     [Fact]
     public async Task CancelarOS_DeveCancelarQuandoStatusForValido()
     {
-        var os = new OrdemServico
-        {
-            Id = 1,
-            Status = StatusOrdemServico.Recebida
-        };
+        var os = CriarOSValida(); // já começa em Recebida
 
-        var repoMock = new Mock<IOrdemServicoRepository>();
-        var uowMock = new Mock<IUnitOfWork>();
+        _osRepo.Setup(x => x.ObterPorIdAsync(1))
+            .ReturnsAsync(os);
 
-        repoMock.Setup(x => x.ObterPorIdAsync(1))
-                .ReturnsAsync(os);
+        var service = CriarService();
 
-        var service = new OrdemServicoService(
-            repoMock.Object,
-            null!, null!, null!, null!, null!,
-            uowMock.Object
-        );
-
-        // Act
         await service.CancelarOSAsync(1);
 
-        // Assert
         Assert.Equal(StatusOrdemServico.Cancelada, os.Status);
-        uowMock.Verify(x => x.CommitAsync(), Times.Once);
+        _uow.Verify(x => x.CommitAsync(), Times.Once);
     }
 
     [Fact]
     public async Task Nao_Deve_Cancelar_Se_Status_Invalido()
     {
-        var service = CriarService();
+        var os = CriarOSValida();
 
-        var os = new OrdemServico
-        {
-            Id = 1,
-            Status = StatusOrdemServico.Finalizada
-        };
+        os.IniciarDiagnostico();
+        os.EnviarOrcamento();
+        os.ExecutarOS(); // agora está EmExecucao (inválido para cancelamento)
 
         _osRepo.Setup(x => x.ObterPorIdAsync(1))
             .ReturnsAsync(os);
 
-        await Assert.ThrowsAsync<Exception>(() =>
+        var service = CriarService();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.CancelarOSAsync(1));
     }
 
     [Fact]
     public async Task Deve_Finalizar_OS_Quando_Tudo_OK()
     {
-        var service = CriarService();
+        var os = CriarOSValida();
 
-        var os = new OrdemServico
-        {
-            Id = 1,
-            Status = StatusOrdemServico.EmExecucao,
-            PossuiOrcamentoPendente = false,
-            Servicos = new List<OrdemServicoServico>
+        os.IniciarDiagnostico();
+        os.EnviarOrcamento();
+        os.ExecutarOS();
+
+        os.PossuiOrcamentoPendente = false;
+
+        os.Servicos = new List<OrdemServicoServico>
         {
             new OrdemServicoServico
             {
                 Logs = new List<OrdemServicoServicoLog>
                 {
-                    new OrdemServicoServicoLog { AcaoLog = StatusServicoLog.Terminar }
+                    new OrdemServicoServicoLog
+                    {
+                        AcaoLog = StatusServicoLog.Terminar
+                    }
                 }
             }
-        }
         };
 
         _osRepo.Setup(x => x.ObterComServicosAsync(1))
             .ReturnsAsync(os);
+
+        var service = CriarService();
 
         await service.FinalizarOSAsync(1);
 
@@ -115,45 +117,68 @@ public class OrdemServicoServiceTests
     [Fact]
     public async Task Nao_Deve_Finalizar_Se_Houver_Servico_Sem_Finalizar()
     {
-        var service = CriarService();
+        var os = CriarOSValida();
 
-        var os = new OrdemServico
-        {
-            Id = 1,
-            Status = StatusOrdemServico.EmExecucao,
-            PossuiOrcamentoPendente = false,
-            Servicos = new List<OrdemServicoServico>
+        os.IniciarDiagnostico();
+        os.EnviarOrcamento();
+        os.ExecutarOS();
+
+        os.PossuiOrcamentoPendente = false;
+
+        os.Servicos = new List<OrdemServicoServico>
         {
             new OrdemServicoServico
             {
                 Logs = new List<OrdemServicoServicoLog>
                 {
-                    new OrdemServicoServicoLog { AcaoLog = StatusServicoLog.Iniciar }
+                    new OrdemServicoServicoLog
+                    {
+                        AcaoLog = StatusServicoLog.Iniciar
+                    }
                 }
             }
-        }
         };
 
         _osRepo.Setup(x => x.ObterComServicosAsync(1))
             .ReturnsAsync(os);
 
-        await Assert.ThrowsAsync<Exception>(() =>
+        var service = CriarService();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.FinalizarOSAsync(1));
     }
 
     [Fact]
     public async Task Deve_Entregar_OS_Quando_Finalizada()
     {
-        var service = CriarService();
+        var os = CriarOSValida();
 
-        var os = new OrdemServico
+        os.IniciarDiagnostico();
+        os.EnviarOrcamento();
+        os.ExecutarOS();
+
+        os.PossuiOrcamentoPendente = false;
+
+        os.Servicos = new List<OrdemServicoServico>
         {
-            Id = 1,
-            Status = StatusOrdemServico.Finalizada
+            new OrdemServicoServico
+            {
+                Logs = new List<OrdemServicoServicoLog>
+                {
+                    new OrdemServicoServicoLog
+                    {
+                        AcaoLog = StatusServicoLog.Terminar
+                    }
+                }
+            }
         };
+
+        os.Finalizar();
 
         _osRepo.Setup(x => x.ObterPorIdAsync(1))
             .ReturnsAsync(os);
+
+        var service = CriarService();
 
         await service.EntregarOSAsync(1);
 
@@ -163,19 +188,18 @@ public class OrdemServicoServiceTests
     [Fact]
     public async Task Nao_Deve_Entregar_Se_Nao_Finalizada()
     {
-        var service = CriarService();
+        var os = CriarOSValida();
 
-        var os = new OrdemServico
-        {
-            Id = 1,
-            Status = StatusOrdemServico.EmExecucao
-        };
+        os.IniciarDiagnostico();
+        os.EnviarOrcamento();
+        os.ExecutarOS(); // ainda não finalizada
 
         _osRepo.Setup(x => x.ObterPorIdAsync(1))
             .ReturnsAsync(os);
 
-        await Assert.ThrowsAsync<Exception>(() =>
+        var service = CriarService();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.EntregarOSAsync(1));
     }
-
 }
