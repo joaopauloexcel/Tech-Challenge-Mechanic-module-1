@@ -19,6 +19,9 @@ Projeto desenvolvido como parte do Tech Challenge, com foco em boas práticas de
 
 ## 🧱 Arquitetura do Projeto
 
+Desenho:
+<img width="29" height="88" alt="image" src="https://github.com/user-attachments/assets/0550b4f6-290e-4f47-8537-30763b1ee53f" />
+
 O sistema foi estruturado com os seguintes pilares:
 
 * **Containerização:** Docker
