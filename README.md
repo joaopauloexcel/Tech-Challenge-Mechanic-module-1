@@ -20,7 +20,8 @@ Projeto desenvolvido como parte do Tech Challenge, com foco em boas práticas de
 ## 🧱 Arquitetura do Projeto
 
 Desenho:
-<img width="29" height="88" alt="image" src="https://github.com/user-attachments/assets/0550b4f6-290e-4f47-8537-30763b1ee53f" />
+
+<img width="1012" height="584" alt="a49701c3-df88-444c-8a27-83d4a6d5d67e" src="https://github.com/user-attachments/assets/7993bf65-5aca-4f7b-85fc-3d7a5f712095" />
 
 O sistema foi estruturado com os seguintes pilares:
 
