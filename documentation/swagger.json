@@ -1,0 +1,2179 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "API",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Autentica o usuário",
+        "description": "Realiza login com username e senha e retorna um JWT token.",
+        "operationId": "Login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LoginRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/clientes": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Lista todos os clientes",
+        "description": "Retorna uma lista de clientes. Pode filtrar por CPF/CNPJ.",
+        "operationId": "ListarClientes",
+        "parameters": [
+          {
+            "name": "cpfCnpj",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClienteResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Cria um novo cliente",
+        "description": "Cadastra um cliente no sistema. CPF/CNPJ deve ser único.",
+        "operationId": "CriarCliente",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdicionarClienteRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/api/clientes/{id}": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Busca cliente por ID",
+        "operationId": "ObterClientePorId",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Atualiza um cliente",
+        "description": "Atualiza os dados de um cliente existente.",
+        "operationId": "AtualizarCliente",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AtualizarClienteRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Desativa um cliente",
+        "description": "Desativa um cliente (soft delete).",
+        "operationId": "DesativarCliente",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/ordem-servico/externo/{hash}/{docFinal}": {
+      "get": {
+        "tags": [
+          "Ordem de Serviço Externo"
+        ],
+        "summary": "Consulta OS via hash externo + verificação com os 3 últimos dígitos do documento",
+        "operationId": "ObterOrdemServicoExterna",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "docFinal",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdemServicoResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/ordem-servico/externo/{hash}/{docFinal}/orcamento/{orcamentoId}": {
+      "patch": {
+        "tags": [
+          "Ordem de Serviço Externo"
+        ],
+        "summary": "Aprova ou reprova orçamento",
+        "operationId": "DecidirOrcamento",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "docFinal",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orcamentoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DecisaoOrcamentoRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/ordem-servico/externo/{hash}/{docFinal}/cancelar": {
+      "patch": {
+        "tags": [
+          "Ordem de Serviço Externo"
+        ],
+        "summary": "Cancela uma OS via acesso externo (simulação email/webhook)",
+        "operationId": "CancelarOSExterno",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "docFinal",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/ordens-servico": {
+      "get": {
+        "tags": [
+          "Ordens de Serviço"
+        ],
+        "summary": "Lista ordens de serviço com filtros",
+        "description": "Permite filtrar por ID, status, CPF/CNPJ ou placa.",
+        "operationId": "ListarOrdensServico",
+        "parameters": [
+          {
+            "name": "osId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/StatusOrdemServico"
+                }
+              ]
+            }
+          },
+          {
+            "name": "cpfCnpj",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "placa",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "incluirFinalizadasEEntregues",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrdemServicoResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Ordens de Serviço"
+        ],
+        "summary": "Cria uma nova ordem de serviço",
+        "operationId": "CriarOrdemServico",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CriarOrdemServicoRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ordens-servico/{id}": {
+      "get": {
+        "tags": [
+          "Ordens de Serviço"
+        ],
+        "summary": "Busca ordem de serviço por ID",
+        "operationId": "ObterOrdemServicoPorId",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdemServicoResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/ordens-servico/{id}/iniciar-diagnostico": {
+      "post": {
+        "tags": [
+          "Ordens de Serviço"
+        ],
+        "summary": "Inicia diagnóstico da OS",
+        "operationId": "IniciarDiagnostico",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/ordens-servico/{id}/enviar-orcamento": {
+      "post": {
+        "tags": [
+          "Ordens de Serviço"
+        ],
+        "summary": "Envia orçamento para a OS",
+        "operationId": "EnviarOrcamento",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CriarOrcamentoRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/ordens-servico/{id}/orcamentos/{orcId}/servicos/{servId}/executar": {
+      "post": {
+        "tags": [
+          "Ordens de Serviço"
+        ],
+        "summary": "Registra execução de serviço",
+        "operationId": "ExecutarServico",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "orcId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "servId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ExecutarServicoLogRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/ordens-servico/{id}/status/cancelar": {
+      "post": {
+        "tags": [
+          "Ordens de Serviço"
+        ],
+        "summary": "Cancela a OS",
+        "operationId": "CancelarOrdemServico",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/ordens-servico/{id}/status/finalizar": {
+      "post": {
+        "tags": [
+          "Ordens de Serviço"
+        ],
+        "summary": "Finaliza a OS",
+        "operationId": "FinalizarOrdemServico",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/ordens-servico/{id}/status/entregar": {
+      "post": {
+        "tags": [
+          "Ordens de Serviço"
+        ],
+        "summary": "Marca OS como entregue",
+        "operationId": "EntregarOrdemServico",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/ordens-servico/relatorios/servicos/tempo-medio": {
+      "get": {
+        "tags": [
+          "Ordens de Serviço"
+        ],
+        "summary": "Relatório de tempo médio de execução",
+        "operationId": "TempoMedioExecucao",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelatorioTempoMedioResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/produtos": {
+      "get": {
+        "tags": [
+          "Produtos"
+        ],
+        "summary": "Lista todos os produtos",
+        "description": "Retorna uma lista de produtos. Pode filtrar por SKU.",
+        "operationId": "ListarProdutos",
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProdutoResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Produtos"
+        ],
+        "summary": "Cria um novo produto",
+        "description": "Cadastra um produto. Não permite SKU duplicado.",
+        "operationId": "CriarProduto",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdicionarProdutoRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/api/produtos/{id}": {
+      "get": {
+        "tags": [
+          "Produtos"
+        ],
+        "summary": "Busca um produto por ID",
+        "operationId": "ObterProdutoPorId",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProdutoResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Produtos"
+        ],
+        "summary": "Atualiza um produto",
+        "description": "Atualiza os dados de um produto existente.",
+        "operationId": "AtualizarProduto",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AtualizarProdutoRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Produtos"
+        ],
+        "summary": "Remove um produto",
+        "description": "Remove (ou desativa) um produto pelo ID.",
+        "operationId": "DeletarProduto",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/produtos/{id}/estoque": {
+      "patch": {
+        "tags": [
+          "Produtos"
+        ],
+        "summary": "Atualiza o estoque de um produto",
+        "description": "Atualiza apenas a quantidade de estoque do produto.",
+        "operationId": "AtualizarEstoqueProduto",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AtualizarEstoqueProdutoRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/servicos": {
+      "get": {
+        "tags": [
+          "Serviços"
+        ],
+        "summary": "Lista todos os serviços",
+        "description": "Retorna uma lista de serviços. Pode filtrar pelo SKU.",
+        "operationId": "ListarServicos",
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServicoResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Serviços"
+        ],
+        "summary": "Cria um novo serviço",
+        "description": "Cadastra um serviço. Não permite SKU duplicado.",
+        "operationId": "CriarServico",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdicionarServicoRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/api/servicos/{id}": {
+      "get": {
+        "tags": [
+          "Serviços"
+        ],
+        "summary": "Busca um serviço por ID",
+        "operationId": "ObterServicoPorId",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServicoResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Serviços"
+        ],
+        "summary": "Atualiza um serviço",
+        "description": "Atualiza os dados de um serviço existente.",
+        "operationId": "AtualizarServico",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AtualizarServicoRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Serviços"
+        ],
+        "summary": "Remove um serviço",
+        "description": "Remove (ou desativa) um serviço pelo ID.",
+        "operationId": "DeletarServico",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/veiculos": {
+      "get": {
+        "tags": [
+          "Veículos"
+        ],
+        "summary": "Lista todos os veículos",
+        "description": "Retorna uma lista de veículos. Pode filtrar pela placa.",
+        "operationId": "ListarVeiculos",
+        "parameters": [
+          {
+            "name": "placa",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VeiculoResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Veículos"
+        ],
+        "summary": "Cria um novo veículo",
+        "description": "Cadastra um veículo. Não permite placas duplicadas.",
+        "operationId": "CriarVeiculo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AdicionarVeiculoRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/api/veiculos/{id}": {
+      "get": {
+        "tags": [
+          "Veículos"
+        ],
+        "summary": "Busca um veículo por ID",
+        "operationId": "ObterVeiculoPorId",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VeiculoResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Veículos"
+        ],
+        "summary": "Atualiza um veículo",
+        "description": "Atualiza os dados de um veículo existente.",
+        "operationId": "AtualizarVeiculo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AtualizarVeiculoRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Veículos"
+        ],
+        "summary": "Remove um veículo",
+        "description": "Remove (ou desativa) um veículo pelo ID.",
+        "operationId": "DeletarVeiculo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdicionarClienteRequestDto": {
+        "required": [
+          "cpfCnpj",
+          "nome",
+          "telefone1"
+        ],
+        "type": "object",
+        "properties": {
+          "nome": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "cpfCnpj": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "telefone1": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "telefone2": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdicionarProdutoRequestDto": {
+        "required": [
+          "descricao",
+          "precoCusto",
+          "precoVenda",
+          "quantidadeMinima",
+          "quantidadeTotal",
+          "sku"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "descricao": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "precoCusto": {
+            "type": "number",
+            "format": "double"
+          },
+          "precoVenda": {
+            "type": "number",
+            "format": "double"
+          },
+          "quantidadeTotal": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantidadeMinima": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdicionarServicoRequestDto": {
+        "required": [
+          "descricao",
+          "preco",
+          "sku"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "descricao": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "preco": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdicionarVeiculoRequestDto": {
+        "required": [
+          "ano",
+          "clienteId",
+          "marca",
+          "modelo",
+          "placa"
+        ],
+        "type": "object",
+        "properties": {
+          "clienteId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "placa": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "marca": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "modelo": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "ano": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AtualizarClienteRequestDto": {
+        "required": [
+          "cpfCnpj",
+          "nome",
+          "telefone1"
+        ],
+        "type": "object",
+        "properties": {
+          "nome": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "cpfCnpj": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "telefone1": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "telefone2": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AtualizarEstoqueProdutoRequestDto": {
+        "required": [
+          "novoPrecoCusto",
+          "novoPrecoVenda",
+          "quantidadeAdicionada"
+        ],
+        "type": "object",
+        "properties": {
+          "quantidadeAdicionada": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "novoPrecoCusto": {
+            "type": "number",
+            "format": "double"
+          },
+          "novoPrecoVenda": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AtualizarProdutoRequestDto": {
+        "required": [
+          "sku"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "precoCusto": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "precoVenda": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "quantidadeMinima": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AtualizarServicoRequestDto": {
+        "required": [
+          "sku"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "preco": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AtualizarVeiculoRequestDto": {
+        "required": [
+          "clienteId"
+        ],
+        "type": "object",
+        "properties": {
+          "clienteId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "placa": {
+            "type": "string",
+            "nullable": true
+          },
+          "marca": {
+            "type": "string",
+            "nullable": true
+          },
+          "modelo": {
+            "type": "string",
+            "nullable": true
+          },
+          "ano": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClienteResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "cpfCnpj": {
+            "type": "string"
+          },
+          "telefone1": {
+            "type": "string"
+          },
+          "telefone2": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CriarOrcamentoRequestDto": {
+        "required": [
+          "descricao",
+          "servicosOrcamentoOS"
+        ],
+        "type": "object",
+        "properties": {
+          "descricao": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "servicosOrcamentoOS": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServicoOrcamentoRequestDto"
+            }
+          },
+          "produtosOrcamentoOS": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProdutoOrcamentoRequestDto"
+            }
+          },
+          "observacaoMecanico": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CriarOrdemServicoRequestDto": {
+        "required": [
+          "clienteId",
+          "descricao",
+          "titulo",
+          "veiculoId"
+        ],
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "descricao": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "clienteId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "veiculoId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DecisaoOrcamentoRequestDto": {
+        "required": [
+          "aprovar"
+        ],
+        "type": "object",
+        "properties": {
+          "aprovar": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExecutarServicoLogRequestDto": {
+        "required": [
+          "acao"
+        ],
+        "type": "object",
+        "properties": {
+          "acao": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StatusServicoLog"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "LoginRequestDto": {
+        "required": [
+          "password",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LoginResponseDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrdemServicoOrcamentoResponseDto": {
+        "type": "object",
+        "properties": {
+          "osOrcamentoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "observacaoMecanico": {
+            "type": "string",
+            "nullable": true
+          },
+          "dataAprovacaoOrcamento": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "servicosOrcamentoOS": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrdemServicoServicoResponseDto"
+            }
+          },
+          "produtosOrcamentoOS": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrdemServicoProdutoResponseDto"
+            }
+          },
+          "precoTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "statusOrcamento": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrdemServicoProdutoResponseDto": {
+        "type": "object",
+        "properties": {
+          "produtoOrcadoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "skuProdutoOrcado": {
+            "type": "string"
+          },
+          "descricaoProdutoOrcado": {
+            "type": "string"
+          },
+          "qtdProdutoOrcado": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "precoUnitarioProdutoOrcado": {
+            "type": "number",
+            "format": "double"
+          },
+          "precoTotalProduto": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrdemServicoResponseDto": {
+        "type": "object",
+        "properties": {
+          "ordensServicoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tituloOS": {
+            "type": "string"
+          },
+          "statusOS": {
+            "type": "string"
+          },
+          "descricaoOS": {
+            "type": "string"
+          },
+          "dataCriacaoOS": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dataInicioDiagnostico": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dataInicioExecucao": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dataFinalizacao": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dataEntrega": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dataCancelamento": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "nomeCliente": {
+            "type": "string",
+            "nullable": true
+          },
+          "cpfCnpjCliente": {
+            "type": "string"
+          },
+          "placaVeiculo": {
+            "type": "string"
+          },
+          "marcaVeiculo": {
+            "type": "string",
+            "nullable": true
+          },
+          "modeloVeiculo": {
+            "type": "string",
+            "nullable": true
+          },
+          "anoVeiculo": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "possuiOrcamentoPendente": {
+            "type": "boolean"
+          },
+          "possuiOrcamentoAprovado": {
+            "type": "boolean"
+          },
+          "publicToken": {
+            "type": "string"
+          },
+          "orcamentos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrdemServicoOrcamentoResponseDto"
+            }
+          },
+          "precoTotalAprovado": {
+            "type": "number",
+            "format": "double"
+          },
+          "precoTotalPendente": {
+            "type": "number",
+            "format": "double"
+          },
+          "precoTotalGeral": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrdemServicoServicoResponseDto": {
+        "type": "object",
+        "properties": {
+          "servicoOrcadoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "skuServicoOrcado": {
+            "type": "string"
+          },
+          "descricaoServicoOrcado": {
+            "type": "string"
+          },
+          "precoServicoOrcado": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProdutoOrcamentoRequestDto": {
+        "required": [
+          "precoUnitarioProdutoOrcamento",
+          "produtoIdOrcamento",
+          "qtdProdutoOrcamento"
+        ],
+        "type": "object",
+        "properties": {
+          "produtoIdOrcamento": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "qtdProdutoOrcamento": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "precoUnitarioProdutoOrcamento": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProdutoResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "precoCusto": {
+            "type": "number",
+            "format": "double"
+          },
+          "precoVenda": {
+            "type": "number",
+            "format": "double"
+          },
+          "quantidadeTotal": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantidadeReservada": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantidadeMinima": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatorioTempoMedioResponseDto": {
+        "type": "object",
+        "properties": {
+          "porServico": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TempoMedioServicoResponseDto"
+            }
+          },
+          "porOS": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TempoMedioOSResponseDto"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServicoOrcamentoRequestDto": {
+        "required": [
+          "precoServicoOrcamento",
+          "servicoIdOrcamento"
+        ],
+        "type": "object",
+        "properties": {
+          "servicoIdOrcamento": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "precoServicoOrcamento": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServicoResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "preco": {
+            "type": "number",
+            "format": "double"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StatusOrdemServico": {
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "StatusServicoLog": {
+        "enum": [
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "TempoMedioOSResponseDto": {
+        "type": "object",
+        "properties": {
+          "mediaMinutos": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalOS": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TempoMedioServicoResponseDto": {
+        "type": "object",
+        "properties": {
+          "servico": {
+            "type": "string"
+          },
+          "mediaMinutos": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalExecucoes": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "VeiculoResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "clienteId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "placa": {
+            "type": "string"
+          },
+          "marca": {
+            "type": "string"
+          },
+          "modelo": {
+            "type": "string",
+            "nullable": true
+          },
+          "ano": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Clientes"
+    },
+    {
+      "name": "Ordem de Serviço Externo"
+    },
+    {
+      "name": "Ordens de Serviço"
+    },
+    {
+      "name": "Produtos"
+    },
+    {
+      "name": "Serviços"
+    },
+    {
+      "name": "Veículos"
+    }
+  ]
+}
