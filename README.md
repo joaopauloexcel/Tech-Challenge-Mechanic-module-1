@@ -16,6 +16,9 @@ Este projeto é uma API REST desenvolvida em .NET para gerenciamento de uma ofic
 Projeto desenvolvido como parte do Tech Challenge, com foco em boas práticas de engenharia de software, DevOps e arquitetura moderna.
 
 ---
+## Documentação
+
+[📄 Swagger / API Documentation](documentation/swagger.json)
 
 ## 🧱 Arquitetura do Projeto
 
