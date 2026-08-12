@@ -20,6 +20,8 @@ Projeto desenvolvido como parte do Tech Challenge, com foco em boas práticas de
 
 [📄 Swagger / API Documentation](documentation/swagger.json)
 
+___
+
 ## 🧱 Arquitetura do Projeto
 
 Desenho:
